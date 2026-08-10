@@ -55,8 +55,8 @@ function project(lat: number, lon: number, phi: number, theta: number) {
 
 export function GlobeCdn({
   className = "",
-  speed = 0.0035,
-  scrollSensitivity = 0.0025,
+  speed = 0.0015,
+  scrollSensitivity = 0.0015,
   markers = [],
   arcs = [],
 }: GlobeCdnProps) {
@@ -178,13 +178,13 @@ export function GlobeCdn({
         height: width * 2,
         phi: 0,
         theta: 0.24,
-        dark: 0.06,
-        diffuse: 1.15,
-        mapSamples: 32000,
-        mapBrightness: 4.2,
-        baseColor: [0.937, 0.965, 0.988],
-        markerColor: [0, 0.314, 0.627],
-        glowColor: [1, 1, 1],
+        dark: 0,
+        diffuse: 1.2,
+        mapSamples: 45000,
+        mapBrightness: 2.2,
+        baseColor: [0.95, 0.96, 0.97],
+        markerColor: [0.42, 0.46, 0.52],
+        glowColor: [0.92, 0.94, 0.96],
         opacity: 1,
       });
 
