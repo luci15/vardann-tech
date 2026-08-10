@@ -50,13 +50,13 @@ function project(lat: number, lon: number, phi: number, theta: number) {
   const z2 = y1 * sinTheta + z1 * cosTheta;
   const x2 = x1;
 
-  return { x: x2, y: -y2, z: z2, visible: z2 > 0.32 };
+  return { x: x2, y: -y2, z: z2, visible: z2 > 0.28 };
 }
 
 export function GlobeCdn({
   className = "",
-  speed = 0.0012,
-  scrollSensitivity = 0.0012,
+  speed = 0.005,
+  scrollSensitivity = 0.003,
   markers = [],
   arcs = [],
 }: GlobeCdnProps) {
@@ -138,7 +138,7 @@ export function GlobeCdn({
         const p = projected[i];
         const cx = radius + p.x * radius;
         const cy = radius + p.y * radius;
-        dot.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%) scale(${p.visible ? 1 : 0})`;
+        dot.style.transform = `translate(${cx}px, ${cy}px) translate(-4px, -50%) scale(${p.visible ? 1 : 0.4})`;
         dot.style.opacity = p.visible ? "1" : "0";
       });
 
@@ -180,11 +180,11 @@ export function GlobeCdn({
         theta: 0.24,
         dark: 1,
         diffuse: 1.2,
-        mapSamples: 35000,
-        mapBrightness: 6,
-        baseColor: [0.15, 0.22, 0.32],
-        markerColor: [0.65, 0.70, 0.78],
-        glowColor: [0.2, 0.4, 0.75],
+        mapSamples: 64000,
+        mapBrightness: 8,
+        baseColor: [0.157, 0.219, 0.282],
+        markerColor: [0.65, 0.70, 0.75],
+        glowColor: [0, 0.314, 0.627],
         opacity: 1,
       });
 
