@@ -43,11 +43,11 @@ export default function ContactForm() {
   if (submitted) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-vblue/25 bg-lightblue px-8 py-14 text-center">
-        <CheckCircle2 className="h-10 w-10 text-gold" />
+        <CheckCircle2 className="h-10 w-10 text-vblue" />
         <p className="font-heading text-xl font-bold text-navy">
           Message received.
         </p>
-        <p className="max-w-sm text-sm text-body">
+        <p className="max-w-sm text-base text-body">
           Thanks for reaching out — our team will get back to you shortly.
         </p>
         <button

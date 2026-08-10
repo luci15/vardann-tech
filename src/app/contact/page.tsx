@@ -20,7 +20,7 @@ export default function ContactPage() {
         <div className="mx-auto grid max-w-5xl gap-12 px-6 lg:grid-cols-[1fr_1.2fr] lg:px-10">
           <div>
             <p className="text-eyebrow text-[0.68rem] text-steel">Get in Touch</p>
-            <div className="mt-4 flex flex-col gap-4 text-sm text-body">
+            <div className="mt-4 flex flex-col gap-4 text-base text-body">
               <div>
                 <p className="text-navy">Website</p>
                 <p>{company.website}</p>

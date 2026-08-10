@@ -75,7 +75,7 @@ export default function CapabilitiesShowcase() {
 
             <div className="relative flex h-full flex-col justify-between p-5 sm:p-7">
               <div className="flex items-start justify-between">
-                <span className="text-eyebrow text-[0.68rem] text-gold">
+                <span className="text-eyebrow text-[0.68rem] text-vblue">
                   {item.number}
                 </span>
                 <TechIcon
@@ -98,7 +98,7 @@ export default function CapabilitiesShowcase() {
                     <p className="text-eyebrow mt-2 text-[0.62rem] text-steel">
                       {item.subtitle}
                     </p>
-                    <p className="mt-4 max-w-md text-sm leading-relaxed text-body">
+                    <p className="mt-4 max-w-md text-base leading-relaxed text-body">
                       {item.description}
                     </p>
                     <div className="mt-6 flex items-center gap-2 text-eyebrow text-[0.68rem] text-vblue">
@@ -118,7 +118,7 @@ export default function CapabilitiesShowcase() {
           type="button"
           aria-label="Previous capability"
           onClick={prev}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-vblue/20 bg-white/90 text-navy backdrop-blur-sm transition-colors hover:border-gold hover:text-gold"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-vblue/20 bg-white/90 text-navy backdrop-blur-sm transition-colors hover:border-vblue hover:text-vblue"
         >
           <ChevronLeft className="h-4.5 w-4.5" />
         </button>
@@ -126,7 +126,7 @@ export default function CapabilitiesShowcase() {
           type="button"
           aria-label="Next capability"
           onClick={next}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-vblue/20 bg-white/90 text-navy backdrop-blur-sm transition-colors hover:border-gold hover:text-gold"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-vblue/20 bg-white/90 text-navy backdrop-blur-sm transition-colors hover:border-vblue hover:text-vblue"
         >
           <ChevronRight className="h-4.5 w-4.5" />
         </button>

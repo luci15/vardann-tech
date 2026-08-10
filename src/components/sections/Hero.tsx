@@ -10,26 +10,17 @@ const fanProducts = [0, 1, 2, 3, 4, 5].map((i) => bestsellerProducts[i]);
 
 export default function Hero() {
   return (
-    <section className="relative flex min-h-[calc(100vh-4.2rem)] flex-col items-center justify-center gap-2 overflow-hidden bg-soft-light px-6 py-10 lg:px-10">
-      {/* Layered, low-opacity depth — a wide top glow, two soft brand-color
-          blobs off to each side, and a faint technical grid — built only
-          from existing brand tokens (vblue / gold / navy), just composed
-          into more dimension than a single flat gradient. */}
+    <section className="relative flex min-h-[calc(100vh-4.6rem)] flex-col items-center justify-center gap-2 overflow-hidden px-6 py-10 lg:px-10">
+      {/* Texture is scoped to Hero only — a visible technical grid plus a
+          top glow behind the headline. The rest of the light sections stay
+          plain gradient (see .bg-continuous-light). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 [background:radial-gradient(ellipse_60%_45%_at_50%_0%,rgba(0,80,160,0.14),transparent_65%)]"
+        className="pointer-events-none absolute inset-0 [background:radial-gradient(ellipse_60%_45%_at_50%_0%,rgba(0,80,160,0.16),transparent_65%)]"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -left-24 top-10 h-[26rem] w-[26rem] rounded-full bg-vblue/10 blur-[110px]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-20 bottom-0 h-[22rem] w-[22rem] rounded-full bg-gold/10 blur-[100px]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-[0.35] [background-image:linear-gradient(rgba(40,56,72,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(40,56,72,0.05)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_65%_55%_at_50%_35%,black,transparent)]"
+        className="pointer-events-none absolute inset-0 opacity-90 [background-image:linear-gradient(rgba(0,80,160,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(0,80,160,0.14)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_35%,black,transparent)]"
       />
 
       <motion.div
@@ -42,10 +33,10 @@ export default function Hero() {
         <p className="text-eyebrow text-[0.7rem] text-vblue">
           NDT &middot; Inspection &middot; Metallography &middot; Manufacturing
         </p>
-        <h1 className="mx-auto mt-4 max-w-3xl font-heading text-[2.1rem] font-extrabold leading-[0.98] tracking-tight text-navy sm:text-5xl lg:text-6xl">
-          Engineered for <span className="text-vblue">the Critical.</span>
+        <h1 className="mx-auto mt-4 max-w-3xl font-display text-[2.6rem] leading-[1] tracking-tight text-navy sm:text-6xl lg:text-7xl">
+          Engineered for <span className="text-vblue italic">the Critical.</span>
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-body sm:text-base">
+        <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-body sm:text-lg">
           {company.about} Trusted across India, the Middle East, Africa and
           Asia-Pacific since {company.established}.
         </p>

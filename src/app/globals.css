@@ -7,9 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-manrope);
-  --font-mono: var(--font-plex-mono);
-  --font-heading: var(--font-manrope);
+  --font-sans: var(--font-instrument-sans);
+  --font-heading: var(--font-instrument-sans);
+  --font-display: var(--font-instrument-serif);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -113,8 +113,9 @@
 
 @layer utilities {
   .text-eyebrow {
-    font-family: var(--font-plex-mono);
-    letter-spacing: 0.28em;
+    font-family: var(--font-instrument-sans);
+    font-weight: 700;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
   }
 
@@ -125,6 +126,25 @@
   }
   .bg-soft-blue {
     background: linear-gradient(135deg, #eef7fc 0%, #cfe7f5 50%, #eef7fc 100%);
+  }
+
+  /* One continuous wash behind every light section on the homepage —
+     applied once to their shared wrapper (see page.tsx) instead of each
+     section carrying its own closed gradient, which is what created hard
+     seams at every section boundary. Vertical stops drift gently between
+     white and the brand's light-blue tint so the whole stack reads as one
+     surface, not a stack of separate colored blocks. */
+  .bg-continuous-light {
+    background: linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #e7f1f9 18%,
+      #eef7fc 34%,
+      #dceaf5 52%,
+      #eef7fc 68%,
+      #e3eff8 84%,
+      #f8f8f8 100%
+    );
   }
 }
 

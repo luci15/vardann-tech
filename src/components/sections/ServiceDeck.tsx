@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { capabilities } from "@/lib/content";
 import ServicePattern from "@/components/ui/ServicePattern";
+import TechIcon from "@/components/ui/TechIcon";
 
 const N = capabilities.length;
 const SEGMENT_VH = 70;
@@ -52,17 +53,21 @@ export default function ServiceDeck() {
   return (
     <section
       ref={sectionRef}
-      className="relative bg-soft-blue"
+      className="relative"
       style={{ height: `${N * SEGMENT_VH}vh` }}
     >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 [background:radial-gradient(ellipse_55%_50%_at_80%_20%,rgba(0,80,160,0.10),transparent_65%)]"
+      />
       <div className="sticky top-20 flex h-[calc(100vh-5rem)] w-full items-center overflow-hidden px-6 lg:px-10">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
           <div>
-            <p className="text-eyebrow text-[0.72rem] text-gold">Services / 01</p>
-            <h2 className="mt-3 font-heading text-3xl font-extrabold leading-[1.08] tracking-tight text-navy sm:text-4xl">
-              What Vardann Does.
+            <p className="text-eyebrow text-[0.72rem] text-vblue">Services / 01</p>
+            <h2 className="mt-3 font-display text-4xl leading-[1.08] tracking-tight text-navy sm:text-5xl">
+              What Vardann <span className="text-vblue italic">Does.</span>
             </h2>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-body">
+            <p className="mt-4 max-w-sm text-base leading-relaxed text-body">
               From advanced NDT and inspection to precision manufacturing and
               metallography — six disciplines, one standard of precision.
             </p>
@@ -110,31 +115,39 @@ export default function ServiceDeck() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
                 transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute inset-0 overflow-hidden rounded-2xl bg-navy p-8 sm:p-12"
+                className="absolute inset-0 overflow-hidden rounded-2xl border border-white/10 bg-navy p-8 shadow-[0_1px_0_0_rgba(255,255,255,0.08)_inset,0_30px_60px_-20px_rgba(0,80,160,0.35)] sm:p-12"
               >
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,0.4)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.4)_1px,transparent_1px)] [background-size:32px_32px]"
+                />
                 <ServicePattern
                   id={item.id}
                   className="pointer-events-none absolute -right-4 -top-4 h-28 w-28 text-vblue-bright/30 sm:h-32 sm:w-32"
+                />
+                <TechIcon
+                  icon={item.icon}
+                  className="pointer-events-none absolute -bottom-10 -right-10 h-64 w-64 text-white/[0.05] sm:h-72 sm:w-72"
                 />
 
                 <div className="relative flex h-full flex-col justify-center">
                   <span className="text-eyebrow text-[0.65rem] text-gold">
                     Step {item.number} / 06
                   </span>
-                  <h3 className="mt-3 font-heading text-2xl font-bold text-white sm:text-4xl">
+                  <h3 className="mt-3 font-display text-3xl text-white sm:text-5xl">
                     {item.title}
                   </h3>
                   <div className="mt-4 flex flex-wrap gap-1.5">
                     {tags.map((t) => (
                       <span
                         key={t}
-                        className="text-eyebrow rounded-full border border-vblue-bright/40 px-2.5 py-1 text-[0.55rem] text-vblue-bright"
+                        className="text-eyebrow rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-[0.55rem] text-gold"
                       >
                         {t.trim()}
                       </span>
                     ))}
                   </div>
-                  <p className="mt-4 max-w-md text-sm leading-relaxed text-white/70 sm:text-base">
+                  <p className="mt-4 max-w-md text-base leading-relaxed text-white/70 sm:text-lg">
                     {item.description}
                   </p>
                   <div className="mt-6 h-[2px] w-10 bg-gold" />

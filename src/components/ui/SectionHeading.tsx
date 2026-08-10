@@ -1,8 +1,22 @@
+"use client";
+
+import { motion } from "framer-motion";
+
 type SectionHeadingProps = {
   eyebrow: string;
   title: React.ReactNode;
   subtitle?: string;
   align?: "left" | "center";
+};
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.12 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
 };
 
 export default function SectionHeading({
@@ -13,16 +27,27 @@ export default function SectionHeading({
 }: SectionHeadingProps) {
   const isCenter = align === "center";
   return (
-    <div className={isCenter ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
-      <p className="text-eyebrow text-[0.72rem] text-gold">{eyebrow}</p>
-      <h2 className="mt-3 font-heading text-3xl font-extrabold leading-[1.08] tracking-tight text-navy sm:text-4xl lg:text-[2.75rem]">
+    <motion.div
+      className={isCenter ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}
+      variants={container}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, amount: 0.4 }}
+    >
+      <motion.p variants={fadeUp} className="text-eyebrow text-[0.72rem] text-vblue">
+        {eyebrow}
+      </motion.p>
+      <motion.h2
+        variants={fadeUp}
+        className="mt-3 font-display text-4xl leading-[1.08] tracking-tight text-navy sm:text-5xl lg:text-[3.25rem]"
+      >
         {title}
-      </h2>
+      </motion.h2>
       {subtitle && (
-        <p className="mt-4 text-sm leading-relaxed text-body sm:text-base">
+        <motion.p variants={fadeUp} className="mt-4 text-base leading-relaxed text-body sm:text-lg">
           {subtitle}
-        </p>
+        </motion.p>
       )}
-    </div>
+    </motion.div>
   );
 }

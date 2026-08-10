@@ -1,15 +1,15 @@
 import Link from "next/link";
-import { company, navLinks } from "@/lib/content";
+import { company, navLinks, capabilities } from "@/lib/content";
 import Logo from "./Logo";
 
 export default function Footer() {
   return (
     <footer className="border-t border-white/10 bg-navy">
       <div className="mx-auto max-w-7xl px-6 py-14 lg:px-10">
-        <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr]">
+        <div className="grid gap-12 md:grid-cols-[1.3fr_0.9fr_1fr_0.9fr]">
           <div>
             <Logo />
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/60">
+            <p className="mt-5 max-w-sm text-base leading-relaxed text-white/60">
               {company.about}
             </p>
             <p className="text-eyebrow mt-5 text-[0.65rem] text-gold">
@@ -27,6 +27,22 @@ export default function Footer() {
                     className="text-sm text-white/60 transition-colors hover:text-gold"
                   >
                     {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <p className="text-eyebrow text-[0.68rem] text-white/50">Services</p>
+            <ul className="mt-4 flex flex-col gap-2.5">
+              {capabilities.map((c) => (
+                <li key={c.id}>
+                  <Link
+                    href="/services"
+                    className="text-sm text-white/60 transition-colors hover:text-gold"
+                  >
+                    {c.title}
                   </Link>
                 </li>
               ))}

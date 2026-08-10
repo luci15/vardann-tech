@@ -8,11 +8,13 @@ import CtaSection from "@/components/sections/CtaSection";
 export default function Home() {
   return (
     <>
-      <Hero />
-      <Services />
-      <GlobalPresence />
-      <Products />
-      <WhyVardann />
+      <div className="bg-continuous-light">
+        <Hero />
+        <Services />
+        <GlobalPresence />
+        <Products />
+        <WhyVardann />
+      </div>
       <CtaSection />
     </>
   );

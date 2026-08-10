@@ -25,7 +25,7 @@ const regions = ["India", "Middle East", "Africa", "Asia-Pacific"];
 
 export default function GlobalPresence() {
   return (
-    <section className="relative flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center overflow-hidden bg-soft-light px-6 py-12">
+    <section className="relative flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center overflow-hidden px-6 py-12">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 [background:radial-gradient(ellipse_45%_45%_at_50%_60%,rgba(0,80,160,0.12),transparent_65%)]"
@@ -33,7 +33,11 @@ export default function GlobalPresence() {
       <div className="relative mx-auto max-w-6xl">
         <SectionHeading
           eyebrow="Global Presence"
-          title="Trusted Across Continents."
+          title={
+            <>
+              Trusted Across <span className="text-vblue italic">Continents.</span>
+            </>
+          }
           subtitle="Our products and services are trusted by clients across India, the Middle East, Africa, and the Asia-Pacific region."
         />
 

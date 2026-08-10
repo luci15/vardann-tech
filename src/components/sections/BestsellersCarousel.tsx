@@ -60,16 +60,16 @@ export default function BestsellersCarousel() {
               </div>
 
               <div className="flex flex-1 flex-col p-7 pt-0">
-                <p className="text-eyebrow text-[0.62rem] text-gold">
+                <p className="text-eyebrow text-[0.62rem] text-vblue">
                   {p.category}
                 </p>
                 <h3 className="mt-1.5 font-heading text-lg font-bold text-navy">
                   {p.name}
                 </h3>
-                <p className="mt-2.5 text-sm leading-relaxed text-body">
+                <p className="mt-2.5 text-base leading-relaxed text-body">
                   {p.description}
                 </p>
-                <p className="text-eyebrow mt-3 text-[0.58rem] text-steel">
+                <p className="mt-3 text-[0.78rem] leading-snug tracking-normal text-steel italic">
                   {p.spec}
                 </p>
 
@@ -87,7 +87,7 @@ export default function BestsellersCarousel() {
         type="button"
         aria-label="Previous product"
         onClick={() => scrollToIndex(active - 1)}
-        className="absolute left-0 top-[calc(38%+1.5rem)] z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-vblue/30 bg-white text-navy shadow-md transition-all hover:border-gold hover:text-gold hover:shadow-lg"
+        className="absolute left-0 top-[calc(38%+1.5rem)] z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-vblue/30 bg-white text-navy shadow-md transition-all hover:border-vblue hover:text-vblue hover:shadow-lg"
       >
         <ChevronLeft className="h-5 w-5" />
       </button>
@@ -96,7 +96,7 @@ export default function BestsellersCarousel() {
         type="button"
         aria-label="Next product"
         onClick={() => scrollToIndex(active + 1)}
-        className="absolute right-0 top-[calc(38%+1.5rem)] z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-vblue/30 bg-white text-navy shadow-md transition-all hover:border-gold hover:text-gold hover:shadow-lg"
+        className="absolute right-0 top-[calc(38%+1.5rem)] z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-vblue/30 bg-white text-navy shadow-md transition-all hover:border-vblue hover:text-vblue hover:shadow-lg"
       >
         <ChevronRight className="h-5 w-5" />
       </button>

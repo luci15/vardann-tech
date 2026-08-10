@@ -37,16 +37,16 @@ export default function ProductsPage() {
                   />
                 </div>
                 <div className="p-7 pt-0">
-                  <p className="text-eyebrow text-[0.62rem] text-gold">
+                  <p className="text-eyebrow text-[0.62rem] text-vblue">
                     {p.category}
                   </p>
                   <h3 className="mt-1.5 font-heading text-lg font-bold text-navy">
                     {p.name}
                   </h3>
-                  <p className="mt-2.5 text-sm leading-relaxed text-body">
+                  <p className="mt-2.5 text-base leading-relaxed text-body">
                     {p.description}
                   </p>
-                  <p className="text-eyebrow mt-3 text-[0.58rem] text-steel">
+                  <p className="mt-3 text-[0.78rem] leading-snug tracking-normal text-steel italic">
                     {p.spec}
                   </p>
                 </div>

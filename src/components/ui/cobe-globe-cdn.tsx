@@ -50,7 +50,7 @@ function project(lat: number, lon: number, phi: number, theta: number) {
   const z2 = y1 * sinTheta + z1 * cosTheta;
   const x2 = x1;
 
-  return { x: x2, y: -y2, z: z2, visible: z2 > -0.05 };
+  return { x: x2, y: -y2, z: z2, visible: z2 > 0.28 };
 }
 
 export function GlobeCdn({
@@ -178,10 +178,10 @@ export function GlobeCdn({
         height: width * 2,
         phi: 0,
         theta: 0.24,
-        dark: 0,
-        diffuse: 1.4,
-        mapSamples: 18000,
-        mapBrightness: 7,
+        dark: 0.06,
+        diffuse: 1.15,
+        mapSamples: 32000,
+        mapBrightness: 4.2,
         baseColor: [0.937, 0.965, 0.988],
         markerColor: [0, 0.314, 0.627],
         glowColor: [1, 1, 1],
@@ -249,7 +249,7 @@ export function GlobeCdn({
               dotRefs.current[i] = el;
             }}
             className="absolute left-0 top-0 flex items-center gap-1.5"
-            style={{ opacity: 0 }}
+            style={{ opacity: 0, transition: "opacity 120ms linear" }}
           >
             <span className="h-2 w-2 shrink-0 rounded-full bg-vblue shadow-[0_0_6px_2px_rgba(0,80,160,0.55)]" />
             {m.label && (
