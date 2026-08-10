@@ -114,7 +114,7 @@ export default function ServiceDeck() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] as const }}
                 className="absolute inset-0 overflow-hidden rounded-2xl border border-white/10 bg-navy p-8 shadow-[0_1px_0_0_rgba(255,255,255,0.08)_inset,0_30px_60px_-20px_rgba(0,80,160,0.35)] sm:p-12"
               >
                 <div
