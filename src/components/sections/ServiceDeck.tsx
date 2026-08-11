@@ -1,13 +1,54 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { capabilities } from "@/lib/content";
 import ServicePattern from "@/components/ui/ServicePattern";
 import TechIcon from "@/components/ui/TechIcon";
 
 const N = capabilities.length;
 const SEGMENT_VH = 70;
+
+function getCardStyle(index: number, active: number) {
+  const diff = index - active;
+  if (diff === 0) {
+    return {
+      x: 0,
+      y: 0,
+      rotate: 0,
+      scale: 1,
+      opacity: 1,
+      zIndex: 40,
+    };
+  } else if (diff < 0) {
+    // Rolled back cards (stacked straight behind, shifted slightly up)
+    const abs = Math.abs(diff);
+    if (abs > 3) {
+      return { x: 0, y: -45, rotate: 0, scale: 0.8, opacity: 0, zIndex: 0 };
+    }
+    return {
+      x: 0,
+      y: -14 * abs,
+      rotate: 0,
+      scale: 1 - 0.03 * abs,
+      opacity: 0.88 - 0.12 * (abs - 1),
+      zIndex: 40 - abs,
+    };
+  } else {
+    // Upcoming cards (stacked straight behind, shifted slightly down)
+    if (diff > 3) {
+      return { x: 0, y: 45, rotate: 0, scale: 0.8, opacity: 0, zIndex: 0 };
+    }
+    return {
+      x: 0,
+      y: 14 * diff,
+      rotate: 0,
+      scale: 1 - 0.03 * diff,
+      opacity: 0.88 - 0.12 * (diff - 1),
+      zIndex: 40 - diff,
+    };
+  }
+}
 
 export default function ServiceDeck() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -47,9 +88,6 @@ export default function ServiceDeck() {
     window.scrollTo({ top: targetY, behavior: "smooth" });
   };
 
-  const item = capabilities[active];
-  const tags = item.subtitle.split(" / ");
-
   return (
     <section
       ref={sectionRef}
@@ -60,19 +98,20 @@ export default function ServiceDeck() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 [background:radial-gradient(ellipse_55%_50%_at_80%_20%,rgba(0,80,160,0.10),transparent_65%)]"
       />
-      <div className="sticky top-20 flex h-[calc(100vh-5rem)] w-full items-center overflow-hidden px-6 lg:px-10">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+      <div className="sticky top-16 flex h-[calc(100vh-4rem)] w-full items-center px-4 sm:px-6 lg:px-10">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
           <div>
             <p className="text-eyebrow text-[0.72rem] text-vblue">Services / 01</p>
-            <h2 className="mt-3 font-display text-4xl leading-[1.08] tracking-tight text-navy sm:text-5xl">
+            <h2 className="mt-2 font-display text-3xl leading-[1.08] tracking-tight text-navy sm:text-5xl">
               What Vardann <span className="text-vblue italic">Does.</span>
             </h2>
-            <p className="mt-4 max-w-sm text-base leading-relaxed text-body">
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-body sm:mt-4 sm:text-base">
               From advanced NDT and inspection to precision manufacturing and
               metallography — six disciplines, one standard of precision.
             </p>
 
-            <div className="mt-8 flex flex-col gap-1.5">
+            {/* Responsive Service Tabs: Horizontal scroll on mobile, vertical stack on desktop */}
+            <div className="mt-4 flex max-w-full gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mt-6 lg:flex-col lg:overflow-visible lg:pb-0">
               {capabilities.map((c, i) => {
                 const isActive = i === active;
                 return (
@@ -80,8 +119,10 @@ export default function ServiceDeck() {
                     key={c.id}
                     type="button"
                     onClick={() => goTo(i)}
-                    className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-left transition-colors duration-300 ${
-                      isActive ? "bg-white shadow-sm" : "hover:bg-white/50"
+                    className={`flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-left transition-colors duration-300 sm:px-4 sm:py-2.5 ${
+                      isActive
+                        ? "bg-white shadow-sm"
+                        : "bg-white/40 hover:bg-white/60 lg:bg-transparent"
                     }`}
                   >
                     <span
@@ -95,7 +136,7 @@ export default function ServiceDeck() {
                       {c.number}
                     </span>
                     <span
-                      className={`text-sm transition-colors ${
+                      className={`text-xs whitespace-nowrap sm:text-sm transition-colors ${
                         isActive ? "font-bold text-navy" : "text-steel"
                       }`}
                     >
@@ -107,56 +148,83 @@ export default function ServiceDeck() {
             </div>
           </div>
 
-          <div className="relative h-[380px] sm:h-[400px]">
-            <AnimatePresence initial={false}>
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -16 }}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] as const }}
-                className="absolute inset-0 overflow-hidden rounded-2xl border border-white/10 bg-navy p-8 shadow-[0_1px_0_0_rgba(255,255,255,0.08)_inset,0_30px_60px_-20px_rgba(0,80,160,0.35)] sm:p-12"
-              >
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,0.4)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.4)_1px,transparent_1px)] [background-size:32px_32px]"
-                />
-                <ServicePattern
-                  id={item.id}
-                  className="pointer-events-none absolute -right-4 -top-4 h-28 w-28 text-vblue-bright/30 sm:h-32 sm:w-32"
-                />
-                <TechIcon
-                  icon={item.icon}
-                  className="pointer-events-none absolute -bottom-10 -right-10 h-64 w-64 text-white/[0.05] sm:h-72 sm:w-72"
-                />
+          {/* Straight Stacked Card Deck */}
+          <div className="relative h-[320px] w-full max-w-[500px] justify-self-center sm:h-[390px] lg:justify-self-end">
+            {capabilities.map((item, i) => {
+              const isMain = i === active;
+              const tags = item.subtitle.split(" / ");
+              const style = getCardStyle(i, active);
 
-                <div className="relative flex h-full flex-col justify-center">
-                  <span className="text-eyebrow text-[0.65rem] text-gold">
-                    Step {item.number} / 06
-                  </span>
-                  <h3 className="mt-3 font-display text-3xl text-white sm:text-5xl">
-                    {item.title}
-                  </h3>
-                  <div className="mt-4 flex flex-wrap gap-1.5">
-                    {tags.map((t) => (
-                      <span
-                        key={t}
-                        className="text-eyebrow rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-[0.55rem] text-gold"
-                      >
-                        {t.trim()}
-                      </span>
-                    ))}
+              return (
+                <motion.div
+                  key={item.id}
+                  onClick={() => !isMain && goTo(i)}
+                  animate={{
+                    x: style.x,
+                    y: style.y,
+                    rotate: style.rotate,
+                    scale: style.scale,
+                    opacity: style.opacity,
+                    zIndex: style.zIndex,
+                  }}
+                  transition={{
+                    duration: 0.6,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  whileHover={
+                    !isMain
+                      ? { scale: style.scale + 0.02, cursor: "pointer" }
+                      : undefined
+                  }
+                  className={`absolute inset-0 overflow-hidden rounded-2xl border bg-navy p-6 transition-shadow duration-300 sm:p-10 ${
+                    isMain
+                      ? "border-vblue/30 shadow-[0_1px_0_0_rgba(255,255,255,0.1)_inset,0_30px_60px_-20px_rgba(0,80,160,0.45)]"
+                      : "border-white/20 shadow-[0_12px_36px_-10px_rgba(0,0,0,0.55)] cursor-pointer hover:border-gold/50"
+                  }`}
+                >
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,0.4)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.4)_1px,transparent_1px)] [background-size:32px_32px]"
+                  />
+                  <ServicePattern
+                    id={item.id}
+                    className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 text-vblue-bright/30 sm:h-32 sm:w-32"
+                  />
+                  <TechIcon
+                    icon={item.icon}
+                    className="pointer-events-none absolute -bottom-10 -right-10 h-52 w-52 text-white/[0.05] sm:h-72 sm:w-72"
+                  />
+
+                  <div className="relative flex h-full flex-col justify-center">
+                    <span className="text-eyebrow text-[0.65rem] text-gold">
+                      Step {item.number} / 06
+                    </span>
+                    <h3 className="mt-2 font-display text-2xl text-white sm:mt-3 sm:text-4xl lg:text-5xl">
+                      {item.title}
+                    </h3>
+                    <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-4">
+                      {tags.map((t) => (
+                        <span
+                          key={t}
+                          className="text-eyebrow rounded-full border border-gold/40 bg-gold/10 px-2.5 py-0.5 text-[0.55rem] text-gold"
+                        >
+                          {t.trim()}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="mt-3 max-w-md text-sm leading-relaxed text-white/70 sm:mt-4 sm:text-lg">
+                      {item.description}
+                    </p>
+                    <div className="mt-4 h-[2px] w-10 bg-gold sm:mt-6" />
                   </div>
-                  <p className="mt-4 max-w-md text-base leading-relaxed text-white/70 sm:text-lg">
-                    {item.description}
-                  </p>
-                  <div className="mt-6 h-[2px] w-10 bg-gold" />
-                </div>
-              </motion.div>
-            </AnimatePresence>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </div>
     </section>
   );
 }
+
+

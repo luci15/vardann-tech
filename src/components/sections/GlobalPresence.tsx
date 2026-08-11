@@ -25,7 +25,7 @@ const regions = ["India", "Middle East", "Africa", "Asia-Pacific"];
 
 export default function GlobalPresence() {
   return (
-    <section className="relative flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center overflow-hidden px-6 py-12">
+    <section className="relative flex flex-col items-center justify-center px-6 py-16 sm:py-20">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 [background:radial-gradient(ellipse_45%_45%_at_50%_60%,rgba(0,80,160,0.12),transparent_65%)]"
