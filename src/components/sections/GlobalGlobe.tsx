@@ -51,16 +51,16 @@ function createEarthTexture(): THREE.CanvasTexture {
   canvas.height = 1024;
   const ctx = canvas.getContext("2d")!;
 
-  // Dark Metallic Ocean Fill
+  // Soft Sky Blue Light Ocean Fill
   const oceanGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  oceanGrad.addColorStop(0, "#0f172a");
-  oceanGrad.addColorStop(0.5, "#090d16");
-  oceanGrad.addColorStop(1, "#0f172a");
+  oceanGrad.addColorStop(0, "#e0f2fe");
+  oceanGrad.addColorStop(0.5, "#dbeafe");
+  oceanGrad.addColorStop(1, "#e0f2fe");
   ctx.fillStyle = oceanGrad;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Lat/Lon Graticule Lines
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+  // Lat/Lon Graticule Lines (Soft Brand Blue)
+  ctx.strokeStyle = "rgba(0, 80, 160, 0.1)";
   ctx.lineWidth = 1;
   for (let lat = -80; lat <= 80; lat += 20) {
     const y = ((90 - lat) / 180) * canvas.height;
@@ -77,7 +77,7 @@ function createEarthTexture(): THREE.CanvasTexture {
     ctx.stroke();
   }
 
-  // Continents Polygons
+  // Continents Polygons (Vardann Blue Fill with Crisp White Borders)
   const continents: [number, number][][] = [
     [[37, 10], [30, 32], [12, 43], [-12, 40], [-34, 20], [-34, 18], [5, 9], [15, -17], [32, -13], [37, 10]],
     [[36, -9], [43, -9], [44, 8], [55, 8], [70, 25], [70, 170], [60, 160], [40, 145], [22, 120], [10, 105], [8, 77], [25, 65], [25, 55], [30, 35], [40, 28], [36, -9]],
@@ -89,8 +89,8 @@ function createEarthTexture(): THREE.CanvasTexture {
     [[12, -75], [5, -50], [-10, -35], [-50, -70], [-45, -75], [0, -80], [12, -75]],
   ];
 
-  ctx.fillStyle = "#1e293b";
-  ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
+  ctx.fillStyle = "#0050a0";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
   ctx.lineWidth = 2;
 
   continents.forEach((poly) => {
@@ -106,14 +106,14 @@ function createEarthTexture(): THREE.CanvasTexture {
     ctx.stroke();
   });
 
-  // Yellow Glow Spots under Target Countries
+  // Warm Amber Glow Spots under Target Countries
   ALL_COUNTRIES.forEach((c) => {
     const cx = ((c.lon + 180) / 360) * canvas.width;
     const cy = ((90 - c.lat) / 180) * canvas.height;
     const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 25);
-    grad.addColorStop(0, "rgba(253, 224, 71, 0.9)");
-    grad.addColorStop(0.5, "rgba(250, 204, 21, 0.3)");
-    grad.addColorStop(1, "rgba(250, 204, 21, 0)");
+    grad.addColorStop(0, "rgba(245, 158, 11, 0.95)");
+    grad.addColorStop(0.5, "rgba(251, 191, 36, 0.4)");
+    grad.addColorStop(1, "rgba(251, 191, 36, 0)");
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(cx, cy, 25, 0, Math.PI * 2);
@@ -132,8 +132,8 @@ function createGlowSpriteTexture(): THREE.CanvasTexture {
   const ctx = canvas.getContext("2d")!;
   const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
   grad.addColorStop(0.0, "rgba(255, 255, 255, 1)");
-  grad.addColorStop(0.25, "#fde047");
-  grad.addColorStop(0.55, "rgba(250, 204, 21, 0.35)");
+  grad.addColorStop(0.25, "#f59e0b");
+  grad.addColorStop(0.55, "rgba(245, 158, 11, 0.35)");
   grad.addColorStop(1.0, "rgba(0, 0, 0, 0)");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 128, 128);
@@ -547,17 +547,17 @@ export default function GlobalGlobe() {
       {/* 3D Canvas Mount Point (Transparent) */}
       <div ref={mountRef} className="h-full w-full" />
 
-      {/* Floating Minimal Tooltip */}
+      {/* Floating Minimal Tooltip (Light Theme) */}
       {hoveredCountry && (
         <div
-          className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-[130%] rounded-xl border border-yellow-400/40 bg-slate-900/90 px-3.5 py-2.5 text-xs text-slate-100 shadow-[0_8px_24px_rgba(0,0,0,0.4),0_0_12px_rgba(250,204,21,0.2)] backdrop-blur-md transition-all duration-150 whitespace-nowrap"
+          className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-[130%] rounded-xl border border-amber-400/60 bg-white/95 px-4 py-2.5 text-xs text-slate-800 shadow-[0_10px_30px_rgba(0,80,160,0.18)] backdrop-blur-md transition-all duration-150 whitespace-nowrap"
           style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
         >
-          <div className="mb-1 flex items-center gap-1.5 font-bold text-yellow-300">
+          <div className="mb-1 flex items-center gap-1.5 font-bold text-amber-600">
             <span>{hoveredCountry.flag}</span>
             <span>{hoveredCountry.name}</span>
           </div>
-          <div className="text-[0.7rem] text-slate-400">Capital: {hoveredCountry.capital}</div>
+          <div className="text-[0.72rem] font-medium text-slate-500">Capital: {hoveredCountry.capital}</div>
         </div>
       )}
     </div>

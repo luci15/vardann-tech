@@ -13,7 +13,10 @@ export default function ServiceDeck() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
+  const isNavigatingRef = useRef(false);
+
   const updateFromScroll = useCallback(() => {
+    if (isNavigatingRef.current) return;
     const el = sectionRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -36,15 +39,23 @@ export default function ServiceDeck() {
   }, [updateFromScroll]);
 
   const goTo = (i: number) => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const total = rect.height - window.innerHeight;
-    if (total <= 0) return;
-    const bandSize = total / N;
-    const targetY = window.scrollY + rect.top + i * bandSize + bandSize / 2;
     setActive(i);
-    window.scrollTo({ top: targetY, behavior: "smooth" });
+    isNavigatingRef.current = true;
+
+    const el = sectionRef.current;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const total = rect.height - window.innerHeight;
+      if (total > 0) {
+        const bandSize = total / N;
+        const targetY = window.scrollY + rect.top + i * bandSize + bandSize / 2;
+        window.scrollTo({ top: targetY, behavior: "smooth" });
+      }
+    }
+
+    setTimeout(() => {
+      isNavigatingRef.current = false;
+    }, 750);
   };
 
   return (
@@ -107,30 +118,38 @@ export default function ServiceDeck() {
             </div>
           </div>
 
-          {/* Flicker-Free Rollback Card Animation Container */}
-          <div className="relative h-[320px] w-full max-w-[500px] justify-self-center sm:h-[390px] lg:justify-self-end">
+          {/* 3D Rollback Card Animation Container */}
+          <div className="relative h-[320px] w-full max-w-[500px] justify-self-center [perspective:1200px] sm:h-[390px] lg:justify-self-end">
             {capabilities.map((item, i) => {
               const isMain = i === active;
               const diff = i - active;
               const tags = item.subtitle.split(" / ");
 
               let targetY = 0;
+              let targetRotateX = 0;
+              let targetRotateZ = 0;
               let targetScale = 1;
               let targetOpacity = 0;
 
               if (diff === 0) {
                 targetY = 0;
+                targetRotateX = 0;
+                targetRotateZ = 0;
                 targetScale = 1;
                 targetOpacity = 1;
               } else if (diff < 0) {
-                // Rolled back card
-                targetY = -50;
-                targetScale = 0.94;
+                // Rolled Back Card (Tilts Back & Slides UP)
+                targetY = -85;
+                targetRotateX = -14;
+                targetRotateZ = -2;
+                targetScale = 0.88;
                 targetOpacity = 0;
               } else {
-                // Upcoming card
-                targetY = 50;
-                targetScale = 0.94;
+                // Upcoming Card (Slides UP from Below)
+                targetY = 85;
+                targetRotateX = 14;
+                targetRotateZ = 2;
+                targetScale = 0.88;
                 targetOpacity = 0;
               }
 
@@ -139,15 +158,21 @@ export default function ServiceDeck() {
                   key={item.id}
                   animate={{
                     y: targetY,
+                    rotateX: targetRotateX,
+                    rotateZ: targetRotateZ,
                     scale: targetScale,
                     opacity: targetOpacity,
                     zIndex: isMain ? 20 : 10,
                   }}
                   transition={{
-                    duration: 0.5,
+                    duration: 0.55,
                     ease: [0.16, 1, 0.3, 1],
                   }}
-                  style={{ pointerEvents: isMain ? "auto" : "none" }}
+                  style={{
+                    pointerEvents: isMain ? "auto" : "none",
+                    transformStyle: "preserve-3d",
+                    transformOrigin: "center top",
+                  }}
                   className="absolute inset-0 overflow-hidden rounded-2xl border border-vblue/50 bg-navy p-6 shadow-xl sm:p-10"
                 >
                   <div
