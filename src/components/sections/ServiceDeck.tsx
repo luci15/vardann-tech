@@ -9,47 +9,6 @@ import TechIcon from "@/components/ui/TechIcon";
 const N = capabilities.length;
 const SEGMENT_VH = 70;
 
-function getCardStyle(index: number, active: number) {
-  const diff = index - active;
-  if (diff === 0) {
-    return {
-      x: 0,
-      y: 0,
-      rotate: 0,
-      scale: 1,
-      opacity: 1,
-      zIndex: 40,
-    };
-  } else if (diff < 0) {
-    // Rolled back cards: stacked straight behind, shifted UP by 26px per level
-    const abs = Math.abs(diff);
-    if (abs > 3) {
-      return { x: 0, y: -70, rotate: 0, scale: 0.88, opacity: 0, zIndex: 0 };
-    }
-    return {
-      x: 0,
-      y: -26 * abs,
-      rotate: 0,
-      scale: 1 - 0.02 * abs,
-      opacity: 0.9 - 0.12 * (abs - 1),
-      zIndex: 40 - abs,
-    };
-  } else {
-    // Upcoming cards: stacked straight behind, shifted DOWN by 26px per level
-    if (diff > 3) {
-      return { x: 0, y: 70, rotate: 0, scale: 0.88, opacity: 0, zIndex: 0 };
-    }
-    return {
-      x: 0,
-      y: 26 * diff,
-      rotate: 0,
-      scale: 1 - 0.02 * diff,
-      opacity: 0.9 - 0.12 * (diff - 1),
-      zIndex: 40 - diff,
-    };
-  }
-}
-
 export default function ServiceDeck() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
@@ -148,39 +107,48 @@ export default function ServiceDeck() {
             </div>
           </div>
 
-          {/* Straight Stacked Card Deck */}
+          {/* Flicker-Free Rollback Card Animation Container */}
           <div className="relative h-[320px] w-full max-w-[500px] justify-self-center sm:h-[390px] lg:justify-self-end">
             {capabilities.map((item, i) => {
               const isMain = i === active;
+              const diff = i - active;
               const tags = item.subtitle.split(" / ");
-              const style = getCardStyle(i, active);
+
+              let targetY = 0;
+              let targetScale = 1;
+              let targetOpacity = 0;
+
+              if (diff === 0) {
+                targetY = 0;
+                targetScale = 1;
+                targetOpacity = 1;
+              } else if (diff < 0) {
+                // Rolled back card
+                targetY = -50;
+                targetScale = 0.94;
+                targetOpacity = 0;
+              } else {
+                // Upcoming card
+                targetY = 50;
+                targetScale = 0.94;
+                targetOpacity = 0;
+              }
 
               return (
                 <motion.div
                   key={item.id}
-                  onClick={() => !isMain && goTo(i)}
                   animate={{
-                    x: style.x,
-                    y: style.y,
-                    rotate: style.rotate,
-                    scale: style.scale,
-                    opacity: style.opacity,
-                    zIndex: style.zIndex,
+                    y: targetY,
+                    scale: targetScale,
+                    opacity: targetOpacity,
+                    zIndex: isMain ? 20 : 10,
                   }}
                   transition={{
-                    duration: 0.6,
+                    duration: 0.5,
                     ease: [0.16, 1, 0.3, 1],
                   }}
-                  whileHover={
-                    !isMain
-                      ? { y: style.y + (i < active ? -4 : 4), cursor: "pointer" }
-                      : undefined
-                  }
-                  className={`absolute inset-0 overflow-hidden rounded-2xl border bg-navy p-6 transition-shadow duration-300 sm:p-10 ${
-                    isMain
-                      ? "border-vblue/40 shadow-[0_1px_0_0_rgba(255,255,255,0.12)_inset,0_30px_60px_-15px_rgba(0,80,160,0.5)]"
-                      : "border-white/25 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.6)] cursor-pointer hover:border-gold/60"
-                  }`}
+                  style={{ pointerEvents: isMain ? "auto" : "none" }}
+                  className="absolute inset-0 overflow-hidden rounded-2xl border border-vblue/50 bg-navy p-6 shadow-xl sm:p-10"
                 >
                   <div
                     aria-hidden="true"

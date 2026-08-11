@@ -362,7 +362,22 @@ export function GlobeCdn({
 
   return (
     <div className={`relative aspect-square select-none ${className}`}>
+      {/* Background Vector Globe (Guarantees 100% visibility on all devices) */}
+      <div className="absolute inset-0 rounded-full border border-vblue/20 bg-[radial-gradient(circle_at_30%_30%,rgba(224,240,248,0.9),rgba(200,226,248,0.6)_50%,rgba(0,80,160,0.12))] shadow-[0_20px_60px_-15px_rgba(0,80,160,0.25)] overflow-hidden">
+        <svg className="absolute inset-0 h-full w-full opacity-35" viewBox="0 0 200 200" aria-hidden="true">
+          <circle cx="100" cy="100" r="98" fill="none" stroke="#0050a0" strokeWidth="1.2" />
+          <ellipse cx="100" cy="100" rx="98" ry="35" fill="none" stroke="#0050a0" strokeWidth="0.8" strokeDasharray="4 4" />
+          <ellipse cx="100" cy="100" rx="98" ry="70" fill="none" stroke="#0050a0" strokeWidth="0.8" strokeDasharray="4 4" />
+          <ellipse cx="100" cy="100" rx="40" ry="98" fill="none" stroke="#0050a0" strokeWidth="0.8" strokeDasharray="4 4" />
+          <line x1="100" y1="2" x2="100" y2="198" stroke="#0050a0" strokeWidth="1" strokeDasharray="3 3" />
+          <line x1="2" y1="100" x2="198" y2="100" stroke="#0050a0" strokeWidth="1" strokeDasharray="3 3" />
+        </svg>
+      </div>
+
+      {/* 3D WebGL Canvas Container */}
       <div ref={containerRef} className="relative z-10 h-full w-full" />
+
+      {/* Markers & Delivery Arcs Layer */}
       <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
         <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
           <defs>
@@ -392,7 +407,7 @@ export function GlobeCdn({
                 strokeLinecap="round"
                 strokeDasharray="3 4"
                 markerEnd="url(#arc-arrow)"
-                opacity={0}
+                opacity={0.8}
                 style={{ animation: "arc-flow 1s linear infinite" }}
               />
             ));
@@ -405,7 +420,7 @@ export function GlobeCdn({
               dotRefs.current[i] = el;
             }}
             className="absolute left-0 top-0 flex items-center gap-2"
-            style={{ opacity: 0, transition: "opacity 120ms linear" }}
+            style={{ opacity: 1, transition: "opacity 120ms linear" }}
           >
             <span className="relative flex h-8 w-8 items-center justify-center">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full border border-gold/60 bg-gold/25 opacity-75" />
