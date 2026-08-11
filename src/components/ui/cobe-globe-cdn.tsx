@@ -342,22 +342,25 @@ export function GlobeCdn({
               <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0050a0" />
             </marker>
           </defs>
-          {arcs.map((arc) => (
-            <path
-              key={`${arc.from.join(",")}-${arc.to.join(",")}`}
-              ref={(el) => {
-                if (el) arcRefs.current.push(el);
-              }}
-              fill="none"
-              stroke="#0050a0"
-              strokeWidth={1.8}
-              strokeLinecap="round"
-              strokeDasharray="3 4"
-              markerEnd="url(#arc-arrow)"
-              opacity={0}
-              style={{ animation: "arc-flow 1s linear infinite" }}
-            />
-          ))}
+          {(() => {
+            arcRefs.current = [];
+            return arcs.map((arc) => (
+              <path
+                key={`${arc.from.join(",")}-${arc.to.join(",")}`}
+                ref={(el) => {
+                  if (el) arcRefs.current.push(el);
+                }}
+                fill="none"
+                stroke="#0050a0"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeDasharray="3 4"
+                markerEnd="url(#arc-arrow)"
+                opacity={0}
+                style={{ animation: "arc-flow 1s linear infinite" }}
+              />
+            ));
+          })()}
         </svg>
         {markers.map((m, i) => (
           <span

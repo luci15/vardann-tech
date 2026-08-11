@@ -1,6 +1,10 @@
 import * as THREE from "three";
 
-export function createGeoJsonEarthTexture(): THREE.CanvasTexture {
+export function createGeoJsonEarthTexture(): THREE.Texture {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return new THREE.Texture();
+  }
+
   const canvas = document.createElement("canvas");
   canvas.width = 2048;
   canvas.height = 1024;
@@ -112,7 +116,11 @@ export function createGeoJsonEarthTexture(): THREE.CanvasTexture {
   return texture;
 }
 
-export function createProceduralBumpTexture(): THREE.CanvasTexture {
+export function createProceduralBumpTexture(): THREE.Texture {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return new THREE.Texture();
+  }
+
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
   canvas.height = 512;
@@ -125,3 +133,4 @@ export function createProceduralBumpTexture(): THREE.CanvasTexture {
   const texture = new THREE.CanvasTexture(canvas);
   return texture;
 }
+

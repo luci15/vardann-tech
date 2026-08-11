@@ -1,5 +1,15 @@
+"use client";
+
+import dynamic from "next/dynamic";
 import SectionHeading from "@/components/ui/SectionHeading";
-import { GlobeCdn, type GlobeArc, type GlobeMarker } from "@/components/ui/cobe-globe-cdn";
+import type { GlobeArc, GlobeMarker } from "@/components/ui/cobe-globe-cdn";
+
+const GlobeCdn = dynamic(() => import("@/components/ui/cobe-globe-cdn"), {
+  ssr: false,
+  loading: () => (
+    <div className="relative aspect-square w-full rounded-full border border-vblue/10 bg-vblue/5 animate-pulse" />
+  ),
+});
 
 // India as the hub, with spokes out to the other regions the brochure
 // names as served markets.
