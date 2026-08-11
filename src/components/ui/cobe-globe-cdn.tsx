@@ -48,22 +48,28 @@ export class Globe {
 
     this.textureLoader = new THREE.TextureLoader();
 
-    this.initScene();
-    this.initLights();
-    this.initEarth();
-    this.initAtmosphere();
-    this.initStars();
-    this.initControls();
+    try {
+      this.initScene();
+      if (this.renderer) {
+        this.initLights();
+        this.initEarth();
+        this.initAtmosphere();
+        this.initStars();
+        this.initControls();
 
-    this.handleResize = this.handleResize.bind(this);
-    window.addEventListener("resize", this.handleResize);
+        this.handleResize = this.handleResize.bind(this);
+        window.addEventListener("resize", this.handleResize);
 
-    this.animate();
+        this.animate();
+      }
+    } catch (err) {
+      console.warn("WebGL globe initialization caught error:", err);
+      this.renderer = null as any;
+    }
   }
 
   initScene() {
     this.scene = new THREE.Scene();
-    // Light mode transparent background
     this.scene.background = null;
 
     const width = this.container.clientWidth || 450;
@@ -77,20 +83,26 @@ export class Globe {
     );
     this.camera.position.set(0, 3, 14);
 
-    this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      powerPreference: "high-performance",
-      alpha: true,
-    });
-    this.renderer.setSize(width, height);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.0;
+    try {
+      this.renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        powerPreference: "high-performance",
+        alpha: true,
+      });
+      this.renderer.setSize(width, height);
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      this.renderer.toneMappingExposure = 1.0;
 
-    this.container.appendChild(this.renderer.domElement);
+      this.container.appendChild(this.renderer.domElement);
+    } catch (e) {
+      console.warn("WebGL not supported or disabled:", e);
+      this.renderer = null as any;
+    }
   }
 
   initLights() {
+    if (!this.scene) return;
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.8);
     this.scene.add(ambientLight);
 
@@ -104,6 +116,7 @@ export class Globe {
   }
 
   initEarth() {
+    if (!this.scene) return;
     const geometry = new THREE.SphereGeometry(this.radius, 64, 64);
     const bumpTexture = createProceduralBumpTexture();
     const geoJsonTexture = createGeoJsonEarthTexture();
@@ -134,6 +147,7 @@ export class Globe {
   }
 
   initAtmosphere() {
+    if (!this.scene) return;
     const atmosphereGeo = new THREE.SphereGeometry(this.radius * 1.1, 64, 64);
 
     const atmosphereVertexShader = `
@@ -165,6 +179,7 @@ export class Globe {
   }
 
   initStars() {
+    if (!this.scene) return;
     const starsCount = 1800;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(starsCount * 3);
@@ -202,6 +217,7 @@ export class Globe {
   }
 
   initControls() {
+    if (!this.camera || !this.renderer) return;
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
@@ -213,7 +229,7 @@ export class Globe {
   }
 
   handleResize() {
-    if (!this.container) return;
+    if (!this.container || !this.camera || !this.renderer) return;
     const width = this.container.clientWidth;
     const height = this.container.clientHeight || width;
     this.camera.aspect = width / height;
@@ -222,8 +238,9 @@ export class Globe {
   }
 
   animate() {
+    if (!this.renderer) return;
     this.animationFrameId = requestAnimationFrame(() => this.animate());
-    this.controls.update();
+    if (this.controls) this.controls.update();
     if (this.stars) {
       this.stars.rotation.y += 0.0001;
     }
@@ -236,10 +253,25 @@ export class Globe {
   destroy() {
     window.removeEventListener("resize", this.handleResize);
     if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
-    this.renderer.dispose();
-    if (this.container.contains(this.renderer.domElement)) {
-      this.container.removeChild(this.renderer.domElement);
+    if (this.renderer) {
+      this.renderer.dispose();
+      if (this.container && this.container.contains(this.renderer.domElement)) {
+        this.container.removeChild(this.renderer.domElement);
+      }
     }
+  }
+}
+
+function isWebGLAvailable(): boolean {
+  if (typeof window === "undefined" || typeof document === "undefined") return false;
+  try {
+    const canvas = document.createElement("canvas");
+    return !!(
+      window.WebGLRenderingContext &&
+      (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+    );
+  } catch (e) {
+    return false;
   }
 }
 
@@ -264,63 +296,67 @@ export function GlobeCdn({
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || !isWebGLAvailable()) return;
 
-    const globe = new Globe(container, (g) => {
-      if (!g.earthMesh || !g.camera) return;
+    try {
+      const globe = new Globe(container, (g) => {
+        if (!g.earthMesh || !g.camera) return;
 
-      const width = container.clientWidth;
-      const height = container.clientHeight || width;
+        const width = container.clientWidth;
+        const height = container.clientHeight || width;
 
-      // Project Markers
-      markers.forEach((m, i) => {
-        const dot = dotRefs.current[i];
-        if (!dot) return;
+        // Project Markers
+        markers.forEach((m, i) => {
+          const dot = dotRefs.current[i];
+          if (!dot) return;
 
-        const pos = latLonToVector3(m.location[0], m.location[1], 5.02);
-        pos.applyMatrix4(g.earthMesh.matrixWorld);
+          const pos = latLonToVector3(m.location[0], m.location[1], 5.02);
+          pos.applyMatrix4(g.earthMesh.matrixWorld);
 
-        const isFront = pos.dot(g.camera.position) > 0;
-        pos.project(g.camera);
+          const isFront = pos.dot(g.camera.position) > 0;
+          pos.project(g.camera);
 
-        const px = (pos.x * 0.5 + 0.5) * width;
-        const py = (-pos.y * 0.5 + 0.5) * height;
+          const px = (pos.x * 0.5 + 0.5) * width;
+          const py = (-pos.y * 0.5 + 0.5) * height;
 
-        dot.style.transform = `translate(${px}px, ${py}px) translate(-50%, -50%) scale(${isFront ? 1 : 0})`;
-        dot.style.opacity = isFront ? "1" : "0";
+          dot.style.transform = `translate(${px}px, ${py}px) translate(-50%, -50%) scale(${isFront ? 1 : 0})`;
+          dot.style.opacity = isFront ? "1" : "0";
+        });
+
+        // Project Arcs
+        arcs.forEach((arc, i) => {
+          const path = arcRefs.current[i];
+          if (!path) return;
+
+          const pos1 = latLonToVector3(arc.from[0], arc.from[1], 5.02);
+          pos1.applyMatrix4(g.earthMesh.matrixWorld);
+          const front1 = pos1.dot(g.camera.position) > 0;
+          pos1.project(g.camera);
+          const x1 = (pos1.x * 0.5 + 0.5) * width;
+          const y1 = (-pos1.y * 0.5 + 0.5) * height;
+
+          const pos2 = latLonToVector3(arc.to[0], arc.to[1], 5.02);
+          pos2.applyMatrix4(g.earthMesh.matrixWorld);
+          const front2 = pos2.dot(g.camera.position) > 0;
+          pos2.project(g.camera);
+          const x2 = (pos2.x * 0.5 + 0.5) * width;
+          const y2 = (-pos2.y * 0.5 + 0.5) * height;
+
+          const mx = (x1 + x2) / 2;
+          const my = (y1 + y2) / 2 - width * 0.08;
+
+          path.setAttribute("d", `M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`);
+          path.style.opacity = front1 && front2 ? "0.85" : "0";
+        });
       });
 
-      // Project Arcs
-      arcs.forEach((arc, i) => {
-        const path = arcRefs.current[i];
-        if (!path) return;
-
-        const pos1 = latLonToVector3(arc.from[0], arc.from[1], 5.02);
-        pos1.applyMatrix4(g.earthMesh.matrixWorld);
-        const front1 = pos1.dot(g.camera.position) > 0;
-        pos1.project(g.camera);
-        const x1 = (pos1.x * 0.5 + 0.5) * width;
-        const y1 = (-pos1.y * 0.5 + 0.5) * height;
-
-        const pos2 = latLonToVector3(arc.to[0], arc.to[1], 5.02);
-        pos2.applyMatrix4(g.earthMesh.matrixWorld);
-        const front2 = pos2.dot(g.camera.position) > 0;
-        pos2.project(g.camera);
-        const x2 = (pos2.x * 0.5 + 0.5) * width;
-        const y2 = (-pos2.y * 0.5 + 0.5) * height;
-
-        const mx = (x1 + x2) / 2;
-        const my = (y1 + y2) / 2 - width * 0.08;
-
-        path.setAttribute("d", `M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`);
-        path.style.opacity = front1 && front2 ? "0.85" : "0";
-      });
-    });
-
-    globeRef.current = globe;
+      globeRef.current = globe;
+    } catch (err) {
+      console.warn("Globe setup failed:", err);
+    }
 
     return () => {
-      globe.destroy();
+      if (globeRef.current) globeRef.current.destroy();
     };
   }, [markers, arcs]);
 

@@ -21,30 +21,30 @@ function getCardStyle(index: number, active: number) {
       zIndex: 40,
     };
   } else if (diff < 0) {
-    // Rolled back cards (stacked straight behind, shifted slightly up)
+    // Rolled back cards: stacked straight behind, shifted UP by 26px per level
     const abs = Math.abs(diff);
     if (abs > 3) {
-      return { x: 0, y: -45, rotate: 0, scale: 0.8, opacity: 0, zIndex: 0 };
+      return { x: 0, y: -70, rotate: 0, scale: 0.88, opacity: 0, zIndex: 0 };
     }
     return {
       x: 0,
-      y: -14 * abs,
+      y: -26 * abs,
       rotate: 0,
-      scale: 1 - 0.03 * abs,
-      opacity: 0.88 - 0.12 * (abs - 1),
+      scale: 1 - 0.02 * abs,
+      opacity: 0.9 - 0.12 * (abs - 1),
       zIndex: 40 - abs,
     };
   } else {
-    // Upcoming cards (stacked straight behind, shifted slightly down)
+    // Upcoming cards: stacked straight behind, shifted DOWN by 26px per level
     if (diff > 3) {
-      return { x: 0, y: 45, rotate: 0, scale: 0.8, opacity: 0, zIndex: 0 };
+      return { x: 0, y: 70, rotate: 0, scale: 0.88, opacity: 0, zIndex: 0 };
     }
     return {
       x: 0,
-      y: 14 * diff,
+      y: 26 * diff,
       rotate: 0,
-      scale: 1 - 0.03 * diff,
-      opacity: 0.88 - 0.12 * (diff - 1),
+      scale: 1 - 0.02 * diff,
+      opacity: 0.9 - 0.12 * (diff - 1),
       zIndex: 40 - diff,
     };
   }
@@ -110,7 +110,7 @@ export default function ServiceDeck() {
               metallography — six disciplines, one standard of precision.
             </p>
 
-            {/* Responsive Service Tabs: Horizontal scroll on mobile, vertical stack on desktop */}
+            {/* Service Navigation Buttons */}
             <div className="mt-4 flex max-w-full gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mt-6 lg:flex-col lg:overflow-visible lg:pb-0">
               {capabilities.map((c, i) => {
                 const isActive = i === active;
@@ -121,8 +121,8 @@ export default function ServiceDeck() {
                     onClick={() => goTo(i)}
                     className={`flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-left transition-colors duration-300 sm:px-4 sm:py-2.5 ${
                       isActive
-                        ? "bg-white shadow-sm"
-                        : "bg-white/40 hover:bg-white/60 lg:bg-transparent"
+                        ? "bg-white shadow-md ring-1 ring-vblue/20"
+                        : "bg-white/40 hover:bg-white/70 lg:bg-transparent"
                     }`}
                   >
                     <span
@@ -173,13 +173,13 @@ export default function ServiceDeck() {
                   }}
                   whileHover={
                     !isMain
-                      ? { scale: style.scale + 0.02, cursor: "pointer" }
+                      ? { y: style.y + (i < active ? -4 : 4), cursor: "pointer" }
                       : undefined
                   }
                   className={`absolute inset-0 overflow-hidden rounded-2xl border bg-navy p-6 transition-shadow duration-300 sm:p-10 ${
                     isMain
-                      ? "border-vblue/30 shadow-[0_1px_0_0_rgba(255,255,255,0.1)_inset,0_30px_60px_-20px_rgba(0,80,160,0.45)]"
-                      : "border-white/20 shadow-[0_12px_36px_-10px_rgba(0,0,0,0.55)] cursor-pointer hover:border-gold/50"
+                      ? "border-vblue/40 shadow-[0_1px_0_0_rgba(255,255,255,0.12)_inset,0_30px_60px_-15px_rgba(0,80,160,0.5)]"
+                      : "border-white/25 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.6)] cursor-pointer hover:border-gold/60"
                   }`}
                 >
                   <div
@@ -226,5 +226,6 @@ export default function ServiceDeck() {
     </section>
   );
 }
+
 
 

@@ -67,13 +67,17 @@ function MachiningMotif() {
   const r = 34;
   const teeth = Array.from({ length: 10 }, (_, t) => {
     const angle = (t / 10) * Math.PI * 2;
+    const x1 = Number((60 + Math.cos(angle) * r).toFixed(2));
+    const y1 = Number((60 + Math.sin(angle) * r).toFixed(2));
+    const x2 = Number((60 + Math.cos(angle) * (r + 10)).toFixed(2));
+    const y2 = Number((60 + Math.sin(angle) * (r + 10)).toFixed(2));
     return (
       <line
         key={t}
-        x1={60 + Math.cos(angle) * r}
-        y1={60 + Math.sin(angle) * r}
-        x2={60 + Math.cos(angle) * (r + 10)}
-        y2={60 + Math.sin(angle) * (r + 10)}
+        x1={x1}
+        y1={y1}
+        x2={x2}
+        y2={y2}
         stroke="currentColor"
         strokeWidth={1.5}
       />
