@@ -41,7 +41,12 @@ export type IconKey =
   | "transducer"
   | "wedge"
   | "manufacturing"
-  | "training";
+  | "training"
+  | "borescope"
+  | "penetrant"
+  | "hardness"
+  | "spectroscopy"
+  | "pipeline";
 
 export type ServiceGroup = {
   id: string;
@@ -303,3 +308,419 @@ export const industriesServed = [
   "Pipeline & Storage",
   "Heavy Manufacturing",
 ];
+
+// ---------------------------------------------------------------------------
+// Services experience — /services and its four detail routes.
+// Every line below is sourced from the company brochure/catalogue (see
+// Company Brouchure.pdf); nothing here is invented copy.
+// ---------------------------------------------------------------------------
+
+export type ServiceMethod = {
+  code: string;
+  name: string;
+  scope: string;
+  points: string[];
+  advantages?: string[];
+  icon: IconKey;
+};
+
+export type ServiceMethodGroup = {
+  title: string;
+  intro?: string;
+  image: string;
+  methods: ServiceMethod[];
+};
+
+export type ServiceMeta = {
+  id: string;
+  number: string;
+  slug: string;
+  title: string;
+  /** Slash-separated method tag line shown under the eyebrow on the hub. */
+  eyebrow: string;
+  /** Directional editorial headline for the individual page hero. */
+  headline: string;
+  /** Method-group tag line for the individual page hero. */
+  subtitle: string;
+  intro: string;
+  cardDescriptor: string;
+  heroVisualLabel: string;
+  /** Real photography extracted from the company brochure (public/services). */
+  heroImage: string;
+  galleryImage: string;
+  ctaImage: string;
+  icon: IconKey;
+  accent: "vblue" | "gold";
+};
+
+export const serviceMeta: ServiceMeta[] = [
+  {
+    id: "advanced-ndt",
+    number: "01",
+    slug: "advanced-ndt",
+    title: "Advanced NDT",
+    eyebrow: "ECT · RFT · IRIS · NFT · PAUT · TOFD · LRUT",
+    headline: "Seeing what conventional inspection cannot.",
+    subtitle:
+      "Tube & Tubular Inspection · Advanced Ultrasonic Inspection · Pipeline Inspection",
+    intro:
+      "We specialize in Eddy Current, Remote Field, Near Field, and IRIS Ultrasonic Testing for both ferrous and non-ferrous tubes used in heat exchangers, boilers, and condensers.",
+    cardDescriptor: "Tube inspection, advanced ultrasonic & pipeline screening",
+    heroVisualLabel: "PAUT weld scan in progress",
+    heroImage: "/services/advanced-ndt-hero.jpg",
+    galleryImage: "/services/advanced-ndt-gallery.jpg",
+    ctaImage: "/services/advanced-ndt-cta.jpg",
+    icon: "eddyCurrent",
+    accent: "vblue",
+  },
+  {
+    id: "conventional-ndt",
+    number: "02",
+    slug: "conventional-ndt",
+    title: "Conventional NDT",
+    eyebrow: "UT · UTG · RT · MT · PT · HT · PWHT",
+    headline: "Proven inspection. Precise decisions.",
+    subtitle: "Field-Proven Flaw Detection & Material Verification",
+    intro:
+      "Ultrasonic Testing uses high-frequency sound waves to determine part thickness and detect internal or surface flaws in base materials and welds — real-time, accurate results that reduce costly downtime.",
+    cardDescriptor: "Field-proven flaw detection & material verification",
+    heroVisualLabel: "UT thickness gauging on a pressure line",
+    heroImage: "/services/conventional-ndt-hero.jpg",
+    galleryImage: "/services/conventional-ndt-gallery.jpg",
+    ctaImage: "/services/conventional-ndt-cta.jpg",
+    icon: "ultrasonic",
+    accent: "vblue",
+  },
+  {
+    id: "destructive-testing-training",
+    number: "03",
+    slug: "destructive-testing-training",
+    title: "Destructive Testing & Training",
+    eyebrow: "PMI · OES · METALLOGRAPHY · ASNT I / II / III",
+    headline: "Understand the material. Build the expertise.",
+    subtitle: "Chemical Analysis · Metallurgical Testing · NDT Training",
+    intro:
+      "Portable XRF and optical emission analysis confirm material chemistry on site, while our ASNT-aligned training programs build certified, field-ready NDT technicians.",
+    cardDescriptor: "Chemical/metallurgical testing plus certified NDT training",
+    heroVisualLabel: "In-situ metallography on a weld cross-section",
+    heroImage: "/services/destructive-testing-hero.jpg",
+    galleryImage: "/services/hub-gallery-training.jpg",
+    ctaImage: "/services/destructive-testing-cta.jpg",
+    icon: "metallography",
+    accent: "gold",
+  },
+  {
+    id: "manufacturing",
+    number: "04",
+    slug: "manufacturing",
+    title: "Manufacturing",
+    eyebrow: "CNC · VMC · EDM · WIRE CUT · FABRICATION",
+    headline: "Precision engineered to specification.",
+    subtitle: "Precision Manufacturing & Fabrication",
+    intro:
+      "Comprehensive precision manufacturing and fabrication services for industrial, engineering, and NDT applications — from prototype to batch production.",
+    cardDescriptor: "Precision fabrication for NDT & industrial applications",
+    heroVisualLabel: "CNC turning of a calibration tube blank",
+    heroImage: "/services/manufacturing-hero.jpg",
+    galleryImage: "/services/manufacturing-gallery.jpg",
+    ctaImage: "/services/manufacturing-cta.jpg",
+    icon: "manufacturing",
+    accent: "vblue",
+  },
+];
+
+export const advancedNdtGroups: ServiceMethodGroup[] = [
+  {
+    title: "Tube & Tubular Inspection",
+    intro:
+      "We specialize in Eddy Current, Remote Field, Near Field, and IRIS Ultrasonic Testing for both ferrous and non-ferrous tubes used in heat exchangers, boilers, and condensers.",
+    image: "/services/group-tube-inspection.jpg",
+    methods: [
+      {
+        code: "ECT",
+        name: "Eddy Current Testing",
+        scope: "Non-ferrous tubing",
+        points: ["Wall thinning", "Pitting", "Cracking"],
+        advantages: ["Absolute channels", "Differential channels"],
+        icon: "eddyCurrent",
+      },
+      {
+        code: "RFT",
+        name: "Remote Field Testing",
+        scope: "Ferrous tubing",
+        points: ["Measures wall thinning / corrosion up to 12mm"],
+        advantages: ["Fast screening for carbon steel", "Ferritic alloys"],
+        icon: "probe",
+      },
+      {
+        code: "IRIS",
+        name: "Internal Rotary Inspection System",
+        scope: "All materials",
+        points: ["Remaining wall thickness from corrosion", "Erosion"],
+        advantages: ["B-scan imaging", "C-scan imaging"],
+        icon: "ultrasonic",
+      },
+      {
+        code: "NFT",
+        name: "Near Field Testing",
+        scope: "Fin-fan / air cooler tubes",
+        points: ["Internal corrosion", "Pitting near tube inlet"],
+        advantages: ["Used during plant shutdowns"],
+        icon: "probe",
+      },
+    ],
+  },
+  {
+    title: "Advanced Ultrasonic Inspection",
+    image: "/services/group-advanced-ultrasonic.jpg",
+    methods: [
+      {
+        code: "PAUT",
+        name: "Phased Array Ultrasonic Testing",
+        scope: "Weld & component flaw detection",
+        points: ["Multiple beams detect, size and image internal flaws"],
+        advantages: ["Real-time imaging", "No radiation hazard"],
+        icon: "ultrasonic",
+      },
+      {
+        code: "TOFD",
+        name: "Time of Flight Diffraction",
+        scope: "New construction & in-service welds",
+        points: ["Sizes weld defects using diffracted sound waves"],
+        advantages: ["Accurate sizing", "Full weld coverage", "Digital record"],
+        icon: "ultrasonic",
+      },
+    ],
+  },
+  {
+    title: "Pipeline Inspection",
+    image: "/services/group-pipeline.jpg",
+    methods: [
+      {
+        code: "LRUT",
+        name: "Long Range Ultrasonic Testing",
+        scope: "Pipelines, above and below ground",
+        points: ["Guided waves screen long pipe sections without direct access"],
+        icon: "pipeline",
+      },
+      {
+        code: "PECT",
+        name: "Pulsed Eddy Current Testing",
+        scope: "Corrosion under insulation (CUI)",
+        points: ["Wall thickness through insulation, coatings, marine growth"],
+        icon: "eddyCurrent",
+      },
+      {
+        code: "RVI",
+        name: "Remote Visual Inspection",
+        scope: "Borescope / Videoscope",
+        points: ["Inaccessible areas in engines", "Exchangers", "Turbines", "Welds"],
+        icon: "borescope",
+      },
+    ],
+  },
+];
+
+export const conventionalNdtGroups: ServiceMethodGroup[] = [
+  {
+    title: "Conventional Methods",
+    intro:
+      "Field-proven techniques for thickness measurement, flaw detection and material verification — single-sided access, immediate, actionable results.",
+    image: "/services/group-conventional-methods.jpg",
+    methods: [
+      {
+        code: "UT / UTG",
+        name: "Ultrasonic Testing / Thickness Gauging",
+        scope: "Base materials & welds",
+        points: ["High-frequency sound waves measure thickness", "Detect internal or surface flaws"],
+        advantages: ["Single-sided access", "Immediate results"],
+        icon: "ultrasonic",
+      },
+      {
+        code: "RT",
+        name: "Radiographic Testing",
+        scope: "Welds, castings, pressure components",
+        points: ["X-ray / gamma ray inspection"],
+        advantages: ["Volumetric inspection", "Permanent visual record"],
+        icon: "radiography",
+      },
+      {
+        code: "MT",
+        name: "Magnetic Particle Testing",
+        scope: "Ferromagnetic materials",
+        points: ["Magnetic fields + iron particles reveal surface / near-surface cracks"],
+        advantages: ["Portable", "Fast on-site inspection"],
+        icon: "magneticParticle",
+      },
+      {
+        code: "PT",
+        name: "Liquid Penetrant Testing",
+        scope: "Non-porous materials",
+        points: ["Detects surface discontinuities"],
+        advantages: ["Quick", "Cost-effective"],
+        icon: "penetrant",
+      },
+      {
+        code: "HT",
+        name: "Hardness Testing",
+        scope: "Metal surfaces",
+        points: ["Verifies material strength", "Heat-treatment effectiveness"],
+        icon: "hardness",
+      },
+      {
+        code: "CTM",
+        name: "Coating Thickness Measurement",
+        scope: "Dry film thickness",
+        points: ["Quality control for corrosion protection"],
+        icon: "testBlock",
+      },
+      {
+        code: "PWHT",
+        name: "Post Weld Heat Treatment",
+        scope: "Pressure vessels, piping, process equipment",
+        points: ["Relieves residual stress", "Restores mechanical properties after welding"],
+        icon: "welding",
+      },
+    ],
+  },
+];
+
+export const destructiveTestingGroups: ServiceMethodGroup[] = [
+  {
+    title: "Chemical & Metallurgical Testing",
+    image: "/services/group-chemical-metallurgical.jpg",
+    methods: [
+      {
+        code: "PMI",
+        name: "Positive Material Identification",
+        scope: "Welds, castings, components",
+        points: ["Portable XRF analyzers identify alloy composition"],
+        advantages: ["NACE compliance"],
+        icon: "spectroscopy",
+      },
+      {
+        code: "OES",
+        name: "Optical Emission Spectroscopy",
+        scope: "Spark testing",
+        points: ["Identifies elements via emitted light spectrum"],
+        advantages: ["Prevents material mix-ups"],
+        icon: "spectroscopy",
+      },
+      {
+        code: "ISM",
+        name: "In-Situ Metallography",
+        scope: "Welds, power plants, pipelines",
+        points: ["On-site microstructure analysis without damaging the component"],
+        icon: "metallography",
+      },
+    ],
+  },
+  {
+    title: "Training & Certification",
+    intro:
+      "NDT Level I, II and III as per ASNT standards — theory paired with hands-on practicals across every method we operate in the field.",
+    image: "/services/group-training.jpg",
+    methods: [
+      {
+        code: "L1–L3",
+        name: "ASNT-Aligned NDT Training",
+        scope: "PAUT · TOFD · ECT · RFT · IRIS · UT · MT · PT",
+        points: ["Theory + hands-on practicals for each method"],
+        advantages: [
+          "Practical learning",
+          "Certification readiness",
+          "Flexible schedules",
+          "Industry-recognized credential",
+        ],
+        icon: "training",
+      },
+    ],
+  },
+];
+
+export type ManufacturingProduct = {
+  name: string;
+  description: string;
+  specs: string[];
+  icon: IconKey;
+  image: string;
+};
+
+export const manufacturingContent = {
+  capabilities: [
+    "Precision Welding",
+    "CNC Turning",
+    "CNC Milling",
+    "VMC Machining",
+    "EDM",
+    "Wire Cut EDM",
+    "Conventional Machining",
+    "Fabrication & Assembly",
+  ],
+  materials: [
+    "Carbon Steel",
+    "Stainless Steel",
+    "Alloy Steel",
+    "Duplex Stainless Steel",
+    "Aluminium",
+    "Copper Alloys",
+    "Titanium",
+    "Engineering Plastics",
+  ],
+  services: [
+    "Prototype development",
+    "Reverse engineering",
+    "Job work",
+    "Batch production from customer drawings / specifications",
+  ],
+  products: [
+    {
+      name: "Welded Flawed Specimens",
+      description:
+        "Used for NDT training, personnel qualification, and procedure validation — every specimen manufactured to a specified flaw type, size and location.",
+      specs: [
+        "Carbon Steel · Stainless Steel · Alloy Steel · Duplex Steel",
+        "Nickel Alloys · Aluminium · Titanium · Copper Alloys",
+        "Fully customizable: material, dimensions, flaw type/size/location, standard",
+      ],
+      icon: "weldedSpecimen",
+      image: "/services/product-welded-specimens.jpg",
+    },
+    {
+      name: "Calibration Tubes & ECT / RFT / NFT Probes",
+      description:
+        "Precision-machined tubular inspection standards for tube and probe qualification work.",
+      specs: ["30+ materials", "Manufactured per ASME standards", "3–6 day custom shipping"],
+      icon: "calibrationTube",
+      image: "/services/product-calibration-tubes-probes.jpg",
+    },
+    {
+      name: "Calibration Blocks",
+      description:
+        "CNC / EDM machined calibration standards manufactured to IIW and ASME tolerances.",
+      specs: [
+        "IIW Type 1 · IIW Type 2 · V1 · V2 · ASME Section V",
+        "Step wedges · Custom pipe blocks",
+        "NABL / NPL traceable",
+      ],
+      icon: "testBlock",
+      image: "/services/product-calibration-blocks.jpg",
+    },
+  ] as ManufacturingProduct[],
+};
+
+export const whyVardann = [
+  "Complete NDT Solutions under one roof",
+  "Custom Manufacturing & Engineering Support",
+  "Fast Delivery for Standard Products",
+  "Precision CNC & EDM Manufacturing",
+  "Technical Expertise & Application Support",
+  "Global Supply Capability",
+  "Customer-Focused Engineering Solutions",
+];
+
+// Every method/discipline code across all four services, deduped — used by
+// the marquee strip on the services hub.
+export const allMethodCodes = Array.from(
+  new Set(serviceMeta.flatMap((s) => s.eyebrow.split(" · "))),
+);

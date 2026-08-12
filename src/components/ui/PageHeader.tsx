@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 
 type PageHeaderProps = {
   eyebrow: string;
@@ -8,19 +8,19 @@ type PageHeaderProps = {
   subtitle?: string;
 };
 
-const container = {
+const container: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.12 } },
 };
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 22 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
 };
 
 export default function PageHeader({ eyebrow, title, subtitle }: PageHeaderProps) {
   return (
-    <section className="relative overflow-hidden bg-soft-light pt-16 pb-14 sm:pt-20 sm:pb-16">
+    <section className="relative overflow-hidden pt-16 pb-14 sm:pt-20 sm:pb-16">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 [background:radial-gradient(ellipse_50%_50%_at_50%_0%,rgba(0,80,160,0.12),transparent_65%)]"

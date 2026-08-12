@@ -51,12 +51,16 @@
      Sourced from the logo: engineering blue + lion gold + deep navy on a
      light ground. Keep gold to a light touch (accents only, ~5-10% of the
      interface) — the client was explicit that overusing it looks cheap. */
-  --color-navy: #283848;
+  --color-navy: #2c3e50;
   --color-navy-light: #34495e;
-  --color-vblue: #0050a0;
-  --color-vblue-hover: #003f80;
-  --color-vblue-bright: #0058a0;
+  --color-vblue: #0057a4;
+  --color-vblue-hover: #004583;
+  --color-vblue-bright: #0057a4;
+  /* Logo's sun is #ffc272, but that tint is too pale to read as text on
+     light backgrounds — keep the deeper gold for type/accents and use the
+     exact logo tint only inside the mark itself (--color-logo-sun). */
   --color-gold: #f8c028;
+  --color-logo-sun: #ffc272;
   --color-offwhite: #f8f8f8;
   --color-lightblue: #e0f0f8;
   --color-body: #4a5560;

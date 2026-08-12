@@ -13,13 +13,14 @@ export const metadata: Metadata = {
 export default function ProductsPage() {
   return (
     <>
+      <div className="bg-continuous-light">
       <PageHeader
         eyebrow="Our Product"
         title="Precision You Can Measure."
         subtitle="Calibration tubes, probes, test blocks and welded specimens — manufactured per ASME standards with NABL/NPL traceability. Custom orders typically ship within 3–6 days."
       />
 
-      <section className="bg-soft-light pb-20 sm:pb-28">
+      <section className="pb-20 sm:pb-28">
         <div className="mx-auto max-w-6xl px-6 lg:px-10">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {bestsellerProducts.map((p) => (
@@ -56,7 +57,7 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      <section className="bg-soft-blue py-20 sm:py-28">
+      <section className="py-20 sm:py-28">
         <div className="mx-auto max-w-6xl px-6 lg:px-10">
           <SectionHeading
             align="left"
@@ -69,6 +70,7 @@ export default function ProductsPage() {
           </div>
         </div>
       </section>
+      </div>
 
       <CtaSection />
     </>

@@ -108,6 +108,45 @@ const PATHS: Record<IconKey, React.ReactNode> = {
       <path d="M44 16v12" strokeLinecap="round" />
     </>
   ),
+  borescope: (
+    <>
+      <circle cx="16" cy="24" r="9" />
+      <circle cx="16" cy="24" r="3.5" />
+      <path d="M25 24h17M36 18v12" strokeLinecap="round" />
+    </>
+  ),
+  penetrant: (
+    <>
+      <path
+        d="M24 6c6 8 11 15 11 21a11 11 0 0 1-22 0c0-6 5-13 11-21Z"
+        strokeLinejoin="round"
+      />
+      <path d="M19 30a5 5 0 0 0 5 5" strokeLinecap="round" />
+    </>
+  ),
+  hardness: (
+    <>
+      <path d="M24 6 32 18H16z" strokeLinejoin="round" />
+      <path d="M24 18v8" strokeLinecap="round" />
+      <path d="M12 34h24M16 40h16" strokeLinecap="round" />
+      <path d="M18 34c0-4 2.7-6 6-6s6 2 6 6" strokeLinecap="round" />
+    </>
+  ),
+  spectroscopy: (
+    <>
+      <path d="M8 32 20 12h8l12 20z" strokeLinejoin="round" />
+      <path d="M13 30h22" strokeLinecap="round" />
+      <path d="M24 12v20" strokeDasharray="1 3" strokeLinecap="round" />
+    </>
+  ),
+  pipeline: (
+    <>
+      <rect x="4" y="20" width="8" height="8" rx="1" />
+      <rect x="36" y="20" width="8" height="8" rx="1" />
+      <path d="M12 24h24" strokeLinecap="round" />
+      <path d="M18 20v8M30 20v8" strokeLinecap="round" />
+    </>
+  ),
 };
 
 export default function TechIcon({ icon, className = "h-8 w-8" }: TechIconProps) {
