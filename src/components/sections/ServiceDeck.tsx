@@ -118,62 +118,57 @@ export default function ServiceDeck() {
             </div>
           </div>
 
-          {/* 3D Rollback Card Animation Container */}
-          <div className="relative h-[320px] w-full max-w-[500px] justify-self-center [perspective:1200px] sm:h-[390px] lg:justify-self-end">
+          {/* Smooth Stack Rollback Card Animation Container */}
+          <div className="relative h-[320px] w-full max-w-[500px] justify-self-center sm:h-[390px] lg:justify-self-end">
             {capabilities.map((item, i) => {
               const isMain = i === active;
               const diff = i - active;
               const tags = item.subtitle.split(" / ");
 
               let targetY = 0;
-              let targetRotateX = 0;
-              let targetRotateZ = 0;
               let targetScale = 1;
-              let targetOpacity = 0;
+              let targetOpacity = 1;
+              let zIndex = 40;
 
               if (diff === 0) {
                 targetY = 0;
-                targetRotateX = 0;
-                targetRotateZ = 0;
                 targetScale = 1;
                 targetOpacity = 1;
+                zIndex = 40;
               } else if (diff < 0) {
-                // Rolled Back Card (Tilts Back & Slides UP)
-                targetY = -85;
-                targetRotateX = -14;
-                targetRotateZ = -2;
-                targetScale = 0.88;
-                targetOpacity = 0;
+                // Rolled Back Cards: shift UP smoothly into upper rollback stack
+                const abs = Math.abs(diff);
+                targetY = -24 * abs;
+                targetScale = Math.max(0.86, 1 - 0.025 * abs);
+                targetOpacity = Math.max(0, 0.88 - 0.2 * (abs - 1));
+                zIndex = 40 - abs;
               } else {
-                // Upcoming Card (Slides UP from Below)
-                targetY = 85;
-                targetRotateX = 14;
-                targetRotateZ = 2;
-                targetScale = 0.88;
-                targetOpacity = 0;
+                // Upcoming Cards: shift DOWN smoothly into lower stack
+                targetY = 24 * diff;
+                targetScale = Math.max(0.86, 1 - 0.025 * diff);
+                targetOpacity = Math.max(0, 0.88 - 0.2 * (diff - 1));
+                zIndex = 40 - diff;
               }
 
               return (
                 <motion.div
                   key={item.id}
+                  onClick={() => !isMain && goTo(i)}
                   animate={{
                     y: targetY,
-                    rotateX: targetRotateX,
-                    rotateZ: targetRotateZ,
                     scale: targetScale,
                     opacity: targetOpacity,
-                    zIndex: isMain ? 20 : 10,
+                    zIndex,
                   }}
                   transition={{
-                    duration: 0.55,
+                    duration: 0.6,
                     ease: [0.16, 1, 0.3, 1],
                   }}
-                  style={{
-                    pointerEvents: isMain ? "auto" : "none",
-                    transformStyle: "preserve-3d",
-                    transformOrigin: "center top",
-                  }}
-                  className="absolute inset-0 overflow-hidden rounded-2xl border border-vblue/50 bg-navy p-6 shadow-xl sm:p-10"
+                  className={`absolute inset-0 overflow-hidden rounded-2xl border bg-navy p-6 transition-colors duration-300 sm:p-10 ${
+                    isMain
+                      ? "border-vblue/60 shadow-2xl"
+                      : "border-white/20 cursor-pointer hover:border-gold/60"
+                  }`}
                 >
                   <div
                     aria-hidden="true"
