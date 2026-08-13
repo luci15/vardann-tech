@@ -65,6 +65,10 @@ function MicrostructureMotif() {
 
 function MachiningMotif() {
   const r = 34;
+  // Rounded to 3dp: the raw trig results differ in their last float digit
+  // between Node and the browser, which React reports as a hydration
+  // mismatch on these <line> coords.
+  const round = (n: number) => Math.round(n * 1000) / 1000;
   const teeth = Array.from({ length: 10 }, (_, t) => {
     const angle = (t / 10) * Math.PI * 2;
     const x1 = Number((60 + Math.cos(angle) * r).toFixed(2));
@@ -74,10 +78,10 @@ function MachiningMotif() {
     return (
       <line
         key={t}
-        x1={x1}
-        y1={y1}
-        x2={x2}
-        y2={y2}
+        x1={round(60 + Math.cos(angle) * r)}
+        y1={round(60 + Math.sin(angle) * r)}
+        x2={round(60 + Math.cos(angle) * (r + 10))}
+        y2={round(60 + Math.sin(angle) * (r + 10))}
         stroke="currentColor"
         strokeWidth={1.5}
       />

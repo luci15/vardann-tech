@@ -25,6 +25,7 @@ export const ORIGIN_COUNTRY: CountryData = {
 };
 
 export const DESTINATION_COUNTRIES: CountryData[] = [
+  { id: "usa", name: "USA", flag: "🇺🇸", lat: 34.0522, lon: -118.2437, capital: "Washington D.C. / LA" },
   { id: "egypt", name: "Egypt", flag: "🇪🇬", lat: 26.8206, lon: 30.8025, capital: "Cairo" },
   { id: "libya", name: "Libya", flag: "🇱🇾", lat: 26.3351, lon: 17.2283, capital: "Tripoli" },
   { id: "iran", name: "Iran", flag: "🇮🇷", lat: 32.4279, lon: 53.688, capital: "Tehran" },
@@ -51,33 +52,11 @@ function createEarthTexture(): THREE.CanvasTexture {
   canvas.height = 1024;
   const ctx = canvas.getContext("2d")!;
 
-  // Soft Sky Blue Light Ocean Fill
-  const oceanGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  oceanGrad.addColorStop(0, "#e0f2fe");
-  oceanGrad.addColorStop(0.5, "#dbeafe");
-  oceanGrad.addColorStop(1, "#e0f2fe");
-  ctx.fillStyle = oceanGrad;
+  // Pale Silvery Slate Ocean Fill (Matching Reference Theme)
+  ctx.fillStyle = "#eaedf2";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Lat/Lon Graticule Lines (Soft Brand Blue)
-  ctx.strokeStyle = "rgba(0, 80, 160, 0.1)";
-  ctx.lineWidth = 1;
-  for (let lat = -80; lat <= 80; lat += 20) {
-    const y = ((90 - lat) / 180) * canvas.height;
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(canvas.width, y);
-    ctx.stroke();
-  }
-  for (let lon = -180; lon <= 180; lon += 30) {
-    const x = ((lon + 180) / 360) * canvas.width;
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, canvas.height);
-    ctx.stroke();
-  }
-
-  // Continents Polygons (Vardann Blue Fill with Crisp White Borders)
+  // Continents Polygons (Vardann Brand Blue with Crisp White Outlines)
   const continents: [number, number][][] = [
     [[37, 10], [30, 32], [12, 43], [-12, 40], [-34, 20], [-34, 18], [5, 9], [15, -17], [32, -13], [37, 10]],
     [[36, -9], [43, -9], [44, 8], [55, 8], [70, 25], [70, 170], [60, 160], [40, 145], [22, 120], [10, 105], [8, 77], [25, 65], [25, 55], [30, 35], [40, 28], [36, -9]],
@@ -159,11 +138,11 @@ export default function GlobalGlobe() {
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   useEffect(() => {
-    const container = mountRef.current;
-    if (!container || !isWebGLAvailable()) return;
+    const containerEl = mountRef.current;
+    if (!containerEl || !isWebGLAvailable()) return;
 
-    const width = container.clientWidth || 550;
-    const height = container.clientHeight || 550;
+    const width = containerEl.clientWidth || 550;
+    const height = containerEl.clientHeight || 550;
 
     // 1. Scene & Camera (Transparent Background)
     const scene = new THREE.Scene();
@@ -178,7 +157,7 @@ export default function GlobalGlobe() {
       renderer.setSize(width, height);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      container.appendChild(renderer.domElement);
+      containerEl.appendChild(renderer.domElement);
     } catch (e) {
       console.warn("WebGL initialization failed:", e);
       return;
@@ -205,15 +184,20 @@ export default function GlobalGlobe() {
     controls.autoRotate = true;
     controls.autoRotateSpeed = 0.6;
 
-    // 2. Globe Mesh
+    // 2. Globe Mesh with 4K Real Country Vector Outlines Texture
     const radius = 5;
     const earthGeo = new THREE.SphereGeometry(radius, 64, 64);
+    const textureLoader = new THREE.TextureLoader();
+    const vectorTexture = textureLoader.load(
+      "/earth-vector-countries.png",
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+      }
+    );
     const earthMat = new THREE.MeshStandardMaterial({
-      map: createEarthTexture(),
-      roughness: 0.5,
-      metalness: 0.1,
-      emissive: new THREE.Color(0x070b16),
-      emissiveIntensity: 0.2,
+      map: vectorTexture || createEarthTexture(),
+      roughness: 0.6,
+      metalness: 0.05,
     });
     const earthMesh = new THREE.Mesh(earthGeo, earthMat);
     scene.add(earthMesh);
@@ -241,13 +225,13 @@ export default function GlobalGlobe() {
     });
     scene.add(new THREE.Mesh(atmosphereGeo, atmosphereMat));
 
-    // Wireframe Lat/Lon Overlay
+    // Spherical Wireframe Grid Overlay (Matching Reference Image)
     const wireframeGeo = new THREE.SphereGeometry(radius + 0.015, 36, 18);
     const wireframeMat = new THREE.MeshBasicMaterial({
-      color: 0x38bdf8,
+      color: 0x8592a6,
       wireframe: true,
       transparent: true,
-      opacity: 0.08,
+      opacity: 0.14,
     });
     scene.add(new THREE.Mesh(wireframeGeo, wireframeMat));
 
@@ -265,23 +249,23 @@ export default function GlobalGlobe() {
       markerContainer.position.copy(pos);
       markerContainer.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), pos.clone().normalize());
 
-      const color = country.isOrigin ? 0xffea00 : 0xfacc15;
+      const color = 0xffea00; // Bright Sun Yellow Color
 
-      // Core Dot Mesh
+      // Core Sun Dot Mesh
       const dotMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(country.isOrigin ? 0.1 : 0.08, 16, 16),
+        new THREE.SphereGeometry(country.isOrigin ? 0.12 : 0.09, 16, 16),
         new THREE.MeshStandardMaterial({
           color,
           emissive: color,
-          emissiveIntensity: 3.0,
-          roughness: 0.1,
+          emissiveIntensity: 4.0,
+          roughness: 0.05,
           transparent: true,
-          opacity: country.isOrigin ? 1.0 : 0.0,
+          opacity: 1.0,
         })
       );
       markerContainer.add(dotMesh);
 
-      // Hitbox
+      // Hitbox Target
       const hitMesh = new THREE.Mesh(
         new THREE.SphereGeometry(0.35, 12, 12),
         new THREE.MeshBasicMaterial({ visible: false })
@@ -290,13 +274,13 @@ export default function GlobalGlobe() {
       markerContainer.add(hitMesh);
       raycastTargets.push(hitMesh);
 
-      // Glow Sprite
+      // Sun Glow Halo Sprite
       const sprite = new THREE.Sprite(
         new THREE.SpriteMaterial({
           map: glowTexture,
           color,
           transparent: true,
-          opacity: country.isOrigin ? 0.95 : 0.0,
+          opacity: 0.9,
           blending: THREE.AdditiveBlending,
           depthWrite: false,
         })
@@ -304,28 +288,19 @@ export default function GlobalGlobe() {
       sprite.scale.set(0.45, 0.45, 1.0);
       markerContainer.add(sprite);
 
-      // Pulsing Ring
+      // Pulsing Sun Ring
       const ringMesh = new THREE.Mesh(
         new THREE.RingGeometry(0.08, 0.18, 32),
         new THREE.MeshBasicMaterial({
           color,
           side: THREE.DoubleSide,
           transparent: true,
-          opacity: country.isOrigin ? 0.8 : 0.0,
+          opacity: 0.8,
           depthWrite: false,
         })
       );
       ringMesh.rotation.x = Math.PI / 2;
       markerContainer.add(ringMesh);
-
-      // Pillar Beacon
-      const pillarGeo = new THREE.CylinderGeometry(0.008, 0.02, 0.4, 8);
-      pillarGeo.translate(0, 0.2, 0);
-      const pillarMesh = new THREE.Mesh(
-        pillarGeo,
-        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: country.isOrigin ? 0.6 : 0.0 })
-      );
-      markerContainer.add(pillarMesh);
 
       markersGroup.add(markerContainer);
 
@@ -334,16 +309,15 @@ export default function GlobalGlobe() {
         dotMesh,
         sprite,
         ringMesh,
-        pillarMesh,
-        currentScale: country.isOrigin ? 1.0 : 0.0,
-        targetScale: country.isOrigin ? 1.0 : 0.0,
-        visibilityAlpha: country.isOrigin ? 1.0 : 0.0,
-        targetAlpha: country.isOrigin ? 1.0 : 0.0,
+        currentScale: 1.0,
+        targetScale: 1.0,
+        visibilityAlpha: 1.0,
+        targetAlpha: 1.0,
         pulseTime: Math.random() * Math.PI * 2,
       });
     });
 
-    // 4. Connection Arcs
+    // 4. Connection Arcs (India -> Destinations)
     const arcsGroup = new THREE.Group();
     scene.add(arcsGroup);
     const arcsList: any[] = [];
@@ -353,12 +327,13 @@ export default function GlobalGlobe() {
     DESTINATION_COUNTRIES.forEach((country) => {
       const endPos = latLongToVector3(country.lat, country.lon, radius, 0.03);
       const dist = startPos.distanceTo(endPos);
-      const midPos = startPos
-        .clone()
-        .add(endPos)
-        .multiplyScalar(0.5)
-        .normalize()
-        .multiplyScalar(radius + Math.min(dist * 0.35, 2.2));
+      let midPos = startPos.clone().add(endPos).multiplyScalar(0.5);
+
+      if (midPos.length() < 0.8) {
+        midPos = new THREE.Vector3(0, radius + 2.8, 0);
+      } else {
+        midPos.normalize().multiplyScalar(radius + Math.max(dist * 0.38, 1.8));
+      }
 
       const curve = new THREE.QuadraticBezierCurve3(startPos, midPos, endPos);
       const totalPoints = 120;
@@ -371,7 +346,7 @@ export default function GlobalGlobe() {
       );
       arcsGroup.add(baseLine);
 
-      // Flow Line
+      // Dynamic Flow Line
       const dynamicGeo = new THREE.BufferGeometry();
       const posArr = new Float32Array(totalPoints * 3);
       const colArr = new Float32Array(totalPoints * 3);
@@ -404,23 +379,24 @@ export default function GlobalGlobe() {
     let activeHovered: CountryData | null = null;
 
     const handlePointerMove = (e: PointerEvent) => {
-      const rect = container.getBoundingClientRect();
+      if (!containerEl) return;
+      const rect = containerEl.getBoundingClientRect();
       mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     };
 
-    container.addEventListener("pointermove", handlePointerMove);
+    containerEl.addEventListener("pointermove", handlePointerMove);
 
     // Resize Observer
     const resizeObserver = new ResizeObserver(() => {
-      if (!container || !camera || !renderer) return;
-      const w = container.clientWidth;
-      const h = container.clientHeight || w;
+      if (!containerEl || !camera || !renderer) return;
+      const w = containerEl.clientWidth;
+      const h = containerEl.clientHeight || w;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     });
-    resizeObserver.observe(container);
+    resizeObserver.observe(containerEl);
 
     // 6. Animation Loop
     const clock = new THREE.Clock();
@@ -432,24 +408,27 @@ export default function GlobalGlobe() {
 
       controls.update();
 
-      // Update Markers
+      // Update Markers Pulse & Growth
       markersList.forEach((m) => {
         m.pulseTime += delta * 3;
         m.visibilityAlpha += (m.targetAlpha - m.visibilityAlpha) * 0.12;
 
-        m.dotMesh.material.opacity = m.visibilityAlpha;
-        m.sprite.material.opacity = m.visibilityAlpha;
-        m.pillarMesh.material.opacity = m.visibilityAlpha * 0.6;
+        if (m.dotMesh?.material) {
+          m.dotMesh.material.opacity = m.visibilityAlpha;
+        }
+        if (m.sprite?.material) {
+          m.sprite.material.opacity = m.visibilityAlpha;
+        }
 
-        if (m.visibilityAlpha > 0.05) {
+        if (m.visibilityAlpha > 0.05 && m.ringMesh?.material) {
           const phase = (m.pulseTime % (Math.PI * 2)) / (Math.PI * 2);
           m.ringMesh.scale.setScalar(1.0 + phase * 1.4);
           m.ringMesh.material.opacity = (1.0 - phase) * 0.8 * m.visibilityAlpha;
         }
 
         m.currentScale += (m.targetScale - m.currentScale) * 0.15;
-        m.dotMesh.scale.setScalar(m.currentScale);
-        m.sprite.scale.setScalar(0.45 * m.currentScale);
+        if (m.dotMesh) m.dotMesh.scale.setScalar(m.currentScale);
+        if (m.sprite) m.sprite.scale.setScalar(0.45 * m.currentScale);
       });
 
       // Update Connection Flow Lines
@@ -504,11 +483,11 @@ export default function GlobalGlobe() {
           });
         }
 
-        if (container) {
+        if (containerEl) {
           const worldPos = new THREE.Vector3();
           intersects[0].object.getWorldPosition(worldPos);
           const screenPos = worldPos.project(camera);
-          const rect = container.getBoundingClientRect();
+          const rect = containerEl.getBoundingClientRect();
           const x = (screenPos.x * 0.5 + 0.5) * rect.width;
           const y = (-(screenPos.y * 0.5) + 0.5) * rect.height;
 
@@ -530,10 +509,10 @@ export default function GlobalGlobe() {
     animate();
 
     return () => {
-      if (container) {
-        container.removeEventListener("pointermove", handlePointerMove);
-        if (renderer && container.contains(renderer.domElement)) {
-          container.removeChild(renderer.domElement);
+      if (containerEl) {
+        containerEl.removeEventListener("pointermove", handlePointerMove);
+        if (renderer && containerEl.contains(renderer.domElement)) {
+          containerEl.removeChild(renderer.domElement);
         }
       }
       resizeObserver.disconnect();
@@ -544,20 +523,27 @@ export default function GlobalGlobe() {
 
   return (
     <div className="relative h-[550px] w-full select-none">
-      {/* 3D Canvas Mount Point (Transparent) */}
+      {/* 3D Canvas Mount Point */}
       <div ref={mountRef} className="h-full w-full" />
 
-      {/* Floating Minimal Tooltip (Light Theme) */}
+      {/* Floating Tooltip (Ultra-Transparent Glassmorphism) */}
       {hoveredCountry && (
         <div
-          className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-[130%] rounded-xl border border-amber-400/60 bg-white/95 px-4 py-2.5 text-xs text-slate-800 shadow-[0_10px_30px_rgba(0,80,160,0.18)] backdrop-blur-md transition-all duration-150 whitespace-nowrap"
+          className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-[130%] rounded-2xl border border-white/60 bg-white/30 px-4 py-3 text-xs text-slate-900 shadow-[0_16px_40px_rgba(0,0,0,0.15)] backdrop-blur-2xl transition-all duration-150 whitespace-nowrap"
           style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
         >
-          <div className="mb-1 flex items-center gap-1.5 font-bold text-amber-600">
+          <div className="flex items-center gap-2 font-extrabold text-slate-900 text-sm">
             <span>{hoveredCountry.flag}</span>
             <span>{hoveredCountry.name}</span>
+            {hoveredCountry.isOrigin && (
+              <span className="rounded-full bg-vblue/20 px-2 py-0.5 text-[0.6rem] font-bold text-vblue shadow-xs">
+                HQ ORIGIN
+              </span>
+            )}
           </div>
-          <div className="text-[0.72rem] font-medium text-slate-500">Capital: {hoveredCountry.capital}</div>
+          <div className="text-[0.72rem] font-bold text-vblue mt-1">
+            Capital: {hoveredCountry.capital}
+          </div>
         </div>
       )}
     </div>

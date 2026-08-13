@@ -9,14 +9,14 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <>
+    <div className="bg-continuous-light">
       <PageHeader
         eyebrow="Contact Us"
         title="Let's Engineer What's Next."
         subtitle="Talk to our team about your inspection, testing or manufacturing requirements."
       />
 
-      <section className="bg-soft-light pb-20 sm:pb-28">
+      <section className="pb-20 sm:pb-28">
         <div className="mx-auto grid max-w-5xl gap-12 px-6 lg:grid-cols-[1fr_1.2fr] lg:px-10">
           <div>
             <p className="text-eyebrow text-[0.68rem] text-steel">Get in Touch</p>
@@ -39,6 +39,6 @@ export default function ContactPage() {
           <ContactForm />
         </div>
       </section>
-    </>
+    </div>
   );
 }

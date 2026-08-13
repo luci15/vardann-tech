@@ -1,61 +1,49 @@
 import type { Metadata } from "next";
-import { Check } from "lucide-react";
-import { serviceGroups } from "@/lib/content";
-import PageHeader from "@/components/ui/PageHeader";
-import TechIcon from "@/components/ui/TechIcon";
-import CtaSection from "@/components/sections/CtaSection";
+import HubHero from "@/components/services/HubHero";
+import ServiceGallery from "@/components/services/ServiceGallery";
+import WhyVardannSplit from "@/components/services/WhyVardannSplit";
+import CinematicCta from "@/components/services/CinematicCTA";
+import TextReveal from "@/components/services/TextReveal";
 
 export const metadata: Metadata = {
   title: "Services | Vardann Tech and Engg LLP",
+  description:
+    "Advanced NDT, conventional NDT, destructive testing & training, and precision manufacturing — engineering inspection and fabrication services from Vardann Tech and Engg LLP.",
 };
 
 export default function ServicesPage() {
   return (
     <>
-      <PageHeader
-        eyebrow="Inspection Services"
-        title="Zero Compromise Towards Safety."
-        subtitle="Advanced and conventional NDT, plus specialized third-party inspection — delivered to ASME and international standards."
-      />
+      <HubHero />
 
-      <section className="bg-soft-light pb-20 sm:pb-28">
-        <div className="mx-auto max-w-6xl px-6 lg:px-10">
-          <div className="grid gap-6 lg:grid-cols-3">
-            {serviceGroups.map((group) => (
-              <div
-                key={group.id}
-                className="rounded-2xl border border-vblue/10 bg-white p-7 shadow-sm"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-eyebrow text-[0.68rem] text-vblue">
-                    {group.number}
-                  </span>
-                  <TechIcon icon={group.icon} className="h-8 w-8 text-vblue" />
-                </div>
-                <h2 className="mt-4 font-heading text-xl font-bold text-navy">
-                  {group.title}
-                </h2>
-                <p className="mt-2 text-base leading-relaxed text-body">
-                  {group.summary}
-                </p>
-                <ul className="mt-5 flex flex-col gap-2.5">
-                  {group.items.map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-start gap-2.5 text-base text-navy/90"
-                    >
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-vblue" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+      <ServiceGallery />
+
+      <section className="border-t border-vblue/10 bg-white py-12 sm:py-16">
+        <div className="mx-auto max-w-3xl px-6 text-center lg:px-10">
+          <h2 className="font-display text-4xl tracking-tight text-navy sm:text-5xl">
+            <TextReveal text="One standard of" />
+            {" "}
+            <TextReveal text="precision." delay={0.25} className="text-vblue italic" />
+          </h2>
+          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-body sm:text-lg">
+            Vardann Tech combines advanced NDT, conventional NDT, destructive
+            testing, metallurgical analysis, training, and precision
+            manufacturing — under one roof, to one standard, for every
+            project we take on.
+          </p>
         </div>
       </section>
 
-      <CtaSection />
+      <WhyVardannSplit />
+
+      <CinematicCta
+        eyebrow="Vardann Tech and Engg LLP"
+        headline="One team. Every layer of precision."
+        supporting="From advanced inspection to precision manufacturing, Vardann Tech brings the expertise, equipment and engineering support required to move with confidence."
+        visualLabel="Engineering team on a plant inspection"
+        icon="manufacturing"
+        image="/services/hub-cta.jpg"
+      />
     </>
   );
 }

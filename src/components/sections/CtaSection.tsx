@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
-const container = {
+const container: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.12 } },
 };
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 22 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const } },
 };
