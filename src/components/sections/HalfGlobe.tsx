@@ -35,7 +35,7 @@ export const DESTINATION_COUNTRIES: CountryData[] = [
 
 const ALL_COUNTRIES = [ORIGIN_COUNTRY, ...DESTINATION_COUNTRIES];
 
-function latLongToVector3(lat: number, lon: number, radius = 5, altitude = 0): THREE.Vector3 {
+function latLongToVector3(lat: number, lon: number, radius = 16, altitude = 0.05): THREE.Vector3 {
   const phi = (90 - lat) * (Math.PI / 180);
   const theta = (lon + 180) * (Math.PI / 180);
   const r = radius + altitude;
@@ -46,17 +46,15 @@ function latLongToVector3(lat: number, lon: number, radius = 5, altitude = 0): T
   );
 }
 
-function createEarthTexture(): THREE.CanvasTexture {
+function createFallbackTexture(): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = 2048;
   canvas.height = 1024;
   const ctx = canvas.getContext("2d")!;
 
-  // Pale Silvery Slate Ocean Fill (Matching Reference Theme)
-  ctx.fillStyle = "#eaedf2";
+  ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Continents Polygons (Vardann Brand Blue with Crisp White Outlines)
   const continents: [number, number][][] = [
     [[37, 10], [30, 32], [12, 43], [-12, 40], [-34, 20], [-34, 18], [5, 9], [15, -17], [32, -13], [37, 10]],
     [[36, -9], [43, -9], [44, 8], [55, 8], [70, 25], [70, 170], [60, 160], [40, 145], [22, 120], [10, 105], [8, 77], [25, 65], [25, 55], [30, 35], [40, 28], [36, -9]],
@@ -68,8 +66,8 @@ function createEarthTexture(): THREE.CanvasTexture {
     [[12, -75], [5, -50], [-10, -35], [-50, -70], [-45, -75], [0, -80], [12, -75]],
   ];
 
-  ctx.fillStyle = "#0050a0";
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
+  ctx.fillStyle = "#64748b";
+  ctx.strokeStyle = "#475569";
   ctx.lineWidth = 2;
 
   continents.forEach((poly) => {
@@ -85,20 +83,6 @@ function createEarthTexture(): THREE.CanvasTexture {
     ctx.stroke();
   });
 
-  // Warm Amber Glow Spots under Target Countries
-  ALL_COUNTRIES.forEach((c) => {
-    const cx = ((c.lon + 180) / 360) * canvas.width;
-    const cy = ((90 - c.lat) / 180) * canvas.height;
-    const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 25);
-    grad.addColorStop(0, "rgba(245, 158, 11, 0.95)");
-    grad.addColorStop(0.5, "rgba(251, 191, 36, 0.4)");
-    grad.addColorStop(1, "rgba(251, 191, 36, 0)");
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 25, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
@@ -111,8 +95,8 @@ function createGlowSpriteTexture(): THREE.CanvasTexture {
   const ctx = canvas.getContext("2d")!;
   const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
   grad.addColorStop(0.0, "rgba(255, 255, 255, 1)");
-  grad.addColorStop(0.25, "#f59e0b");
-  grad.addColorStop(0.55, "rgba(245, 158, 11, 0.35)");
+  grad.addColorStop(0.25, "#ffea00");
+  grad.addColorStop(0.55, "rgba(255, 234, 0, 0.35)");
   grad.addColorStop(1.0, "rgba(0, 0, 0, 0)");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 128, 128);
@@ -132,7 +116,7 @@ function isWebGLAvailable(): boolean {
   }
 }
 
-export default function GlobalGlobe() {
+export default function HalfGlobe() {
   const mountRef = useRef<HTMLDivElement>(null);
   const [hoveredCountry, setHoveredCountry] = useState<CountryData | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -141,15 +125,15 @@ export default function GlobalGlobe() {
     const containerEl = mountRef.current;
     if (!containerEl || !isWebGLAvailable()) return;
 
-    const width = containerEl.clientWidth || 550;
-    const height = containerEl.clientHeight || 550;
+    const width = containerEl.clientWidth || 1000;
+    const height = containerEl.clientHeight || 450;
 
-    // 1. Scene & Camera (Transparent Background)
+    // 1. Scene & Camera (100% Transparent, No Flash)
     const scene = new THREE.Scene();
     scene.background = null;
 
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, 3, 15.5);
+    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
+    camera.position.set(0, 0, 20);
 
     let renderer: THREE.WebGLRenderer;
     try {
@@ -165,48 +149,49 @@ export default function GlobalGlobe() {
     }
 
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfff7ed, 1.6);
-    sunLight.position.set(12, 10, 10);
+    const sunLight = new THREE.DirectionalLight(0xfff7ed, 1.8);
+    sunLight.position.set(15, 12, 12);
     scene.add(sunLight);
 
-    const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.8);
-    rimLight.position.set(-10, -5, -10);
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.9);
+    rimLight.position.set(-15, -8, -10);
     scene.add(rimLight);
 
     // Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.minDistance = 6.5;
-    controls.maxDistance = 22;
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.6;
+    controls.enableZoom = false;
+    controls.enablePan = false;
 
-    // 2. Globe Mesh with 4K Real Country Vector Outlines Texture
-    const radius = 5;
+    // 2. Semicircular Half Globe Horizon Mesh
+    const radius = 16;
     const earthGeo = new THREE.SphereGeometry(radius, 64, 64);
-    const fallbackTex = createEarthTexture();
+    const fallbackTex = createFallbackTexture();
     const earthMat = new THREE.MeshStandardMaterial({
       map: fallbackTex,
-      roughness: 0.6,
+      roughness: 0.65,
       metalness: 0.05,
     });
 
     const textureLoader = new THREE.TextureLoader();
-    textureLoader.load("/earth-vector-countries.png", (tex) => {
+    textureLoader.load("/earth-half-globe.png", (tex) => {
       tex.colorSpace = THREE.SRGBColorSpace;
       earthMat.map = tex;
       earthMat.needsUpdate = true;
     });
 
+    // Create the Globe Mesh & Position Center Below Baseline (Creating the Horizon Arc)
     const earthMesh = new THREE.Mesh(earthGeo, earthMat);
+    earthMesh.position.set(0, -13.2, 0);
+    earthMesh.rotation.x = 0.38; // Tilt Northern Hemisphere forward matching reference image
     scene.add(earthMesh);
 
-    // Atmosphere Glow
-    const atmosphereGeo = new THREE.SphereGeometry(radius * 1.09, 64, 64);
+    // Subtle Horizon Atmosphere Glow Arc
+    const atmosphereGeo = new THREE.SphereGeometry(radius * 1.05, 64, 64);
     const atmosphereMat = new THREE.ShaderMaterial({
       vertexShader: `
         varying vec3 vNormal;
@@ -218,45 +203,38 @@ export default function GlobalGlobe() {
       fragmentShader: `
         varying vec3 vNormal;
         void main() {
-          float intensity = pow(0.6 - dot(vNormal, vec3(0, 0, 1.0)), 2.5);
-          gl_FragColor = vec4(0.2, 0.6, 1.0, 1.0) * intensity * 0.45;
+          float intensity = pow(0.55 - dot(vNormal, vec3(0, 0, 1.0)), 2.8);
+          gl_FragColor = vec4(0.2, 0.6, 1.0, 1.0) * intensity * 0.4;
         }
       `,
       blending: THREE.AdditiveBlending,
       side: THREE.BackSide,
       transparent: true,
     });
-    scene.add(new THREE.Mesh(atmosphereGeo, atmosphereMat));
+    const atmosphereMesh = new THREE.Mesh(atmosphereGeo, atmosphereMat);
+    atmosphereMesh.position.set(0, -13.2, 0);
+    atmosphereMesh.rotation.x = 0.38;
+    scene.add(atmosphereMesh);
 
-    // Spherical Wireframe Grid Overlay (Matching Reference Image)
-    const wireframeGeo = new THREE.SphereGeometry(radius + 0.015, 36, 18);
-    const wireframeMat = new THREE.MeshBasicMaterial({
-      color: 0x8592a6,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.14,
-    });
-    scene.add(new THREE.Mesh(wireframeGeo, wireframeMat));
-
-    // 3. 3D Glowing Markers
+    // 3. 3D Glowing Markers & Pins on Horizon
     const glowTexture = createGlowSpriteTexture();
     const markersGroup = new THREE.Group();
-    scene.add(markersGroup);
+    earthMesh.add(markersGroup);
 
     const markersList: any[] = [];
     const raycastTargets: THREE.Mesh[] = [];
 
     ALL_COUNTRIES.forEach((country) => {
-      const pos = latLongToVector3(country.lat, country.lon, radius, 0.03);
+      const pos = latLongToVector3(country.lat, country.lon, radius, 0.05);
       const markerContainer = new THREE.Group();
       markerContainer.position.copy(pos);
       markerContainer.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), pos.clone().normalize());
 
-      const color = 0xffea00; // Bright Sun Yellow Color
+      const color = 0xffea00; // Sun Yellow
 
       // Core Sun Dot Mesh
       const dotMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(country.isOrigin ? 0.12 : 0.09, 16, 16),
+        new THREE.SphereGeometry(country.isOrigin ? 0.35 : 0.28, 16, 16),
         new THREE.MeshStandardMaterial({
           color,
           emissive: color,
@@ -270,7 +248,7 @@ export default function GlobalGlobe() {
 
       // Hitbox Target
       const hitMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(0.35, 12, 12),
+        new THREE.SphereGeometry(0.9, 12, 12),
         new THREE.MeshBasicMaterial({ visible: false })
       );
       hitMesh.userData = { country };
@@ -288,12 +266,12 @@ export default function GlobalGlobe() {
           depthWrite: false,
         })
       );
-      sprite.scale.set(0.45, 0.45, 1.0);
+      sprite.scale.set(1.4, 1.4, 1.0);
       markerContainer.add(sprite);
 
       // Pulsing Sun Ring
       const ringMesh = new THREE.Mesh(
-        new THREE.RingGeometry(0.08, 0.18, 32),
+        new THREE.RingGeometry(0.25, 0.55, 32),
         new THREE.MeshBasicMaterial({
           color,
           side: THREE.DoubleSide,
@@ -320,32 +298,32 @@ export default function GlobalGlobe() {
       });
     });
 
-    // 4. Connection Arcs (India -> Destinations)
+    // 4. Connection Arcs Curving Across Horizon (India -> Destinations)
     const arcsGroup = new THREE.Group();
-    scene.add(arcsGroup);
+    earthMesh.add(arcsGroup);
     const arcsList: any[] = [];
 
-    const startPos = latLongToVector3(ORIGIN_COUNTRY.lat, ORIGIN_COUNTRY.lon, radius, 0.03);
+    const startPos = latLongToVector3(ORIGIN_COUNTRY.lat, ORIGIN_COUNTRY.lon, radius, 0.05);
 
     DESTINATION_COUNTRIES.forEach((country) => {
-      const endPos = latLongToVector3(country.lat, country.lon, radius, 0.03);
+      const endPos = latLongToVector3(country.lat, country.lon, radius, 0.05);
       const dist = startPos.distanceTo(endPos);
       let midPos = startPos.clone().add(endPos).multiplyScalar(0.5);
 
-      if (midPos.length() < 0.8) {
-        midPos = new THREE.Vector3(0, radius + 2.8, 0);
+      if (midPos.length() < 1.0) {
+        midPos = new THREE.Vector3(0, radius + 5.0, 0);
       } else {
-        midPos.normalize().multiplyScalar(radius + Math.max(dist * 0.38, 1.8));
+        midPos.normalize().multiplyScalar(radius + Math.max(dist * 0.35, 3.5));
       }
 
       const curve = new THREE.QuadraticBezierCurve3(startPos, midPos, endPos);
       const totalPoints = 120;
       const fullPoints = curve.getPoints(totalPoints);
 
-      // Track Line
+      // Base Track Line
       const baseLine = new THREE.Line(
         new THREE.BufferGeometry().setFromPoints(fullPoints),
-        new THREE.LineBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.2 })
+        new THREE.LineBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.25 })
       );
       arcsGroup.add(baseLine);
 
@@ -401,13 +379,17 @@ export default function GlobalGlobe() {
     });
     resizeObserver.observe(containerEl);
 
-    // 6. Animation Loop
+    // 6. Smooth Horizon Rotation & Render Loop
     const clock = new THREE.Clock();
     let animId: number;
 
-    function animate() {
-      animId = requestAnimationFrame(animate);
+    function animateLoop() {
+      animId = requestAnimationFrame(animateLoop);
       const delta = clock.getDelta();
+
+      // Continuous 60fps Smooth Rotation around Y-axis
+      earthMesh.rotation.y += 0.003;
+      atmosphereMesh.rotation.y += 0.003;
 
       controls.update();
 
@@ -416,12 +398,8 @@ export default function GlobalGlobe() {
         m.pulseTime += delta * 3;
         m.visibilityAlpha += (m.targetAlpha - m.visibilityAlpha) * 0.12;
 
-        if (m.dotMesh?.material) {
-          m.dotMesh.material.opacity = m.visibilityAlpha;
-        }
-        if (m.sprite?.material) {
-          m.sprite.material.opacity = m.visibilityAlpha;
-        }
+        if (m.dotMesh?.material) m.dotMesh.material.opacity = m.visibilityAlpha;
+        if (m.sprite?.material) m.sprite.material.opacity = m.visibilityAlpha;
 
         if (m.visibilityAlpha > 0.05 && m.ringMesh?.material) {
           const phase = (m.pulseTime % (Math.PI * 2)) / (Math.PI * 2);
@@ -431,7 +409,7 @@ export default function GlobalGlobe() {
 
         m.currentScale += (m.targetScale - m.currentScale) * 0.15;
         if (m.dotMesh) m.dotMesh.scale.setScalar(m.currentScale);
-        if (m.sprite) m.sprite.scale.setScalar(0.45 * m.currentScale);
+        if (m.sprite) m.sprite.scale.setScalar(1.4 * m.currentScale);
       });
 
       // Update Connection Flow Lines
@@ -464,11 +442,6 @@ export default function GlobalGlobe() {
         posAttr.needsUpdate = true;
         colAttr.needsUpdate = true;
         arc.dynamicGeo.setDrawRange(0, activeCount);
-
-        if (activeProgress >= 0.95) {
-          const targetMarker = markersList.find((m) => m.country.id === arc.countryId);
-          if (targetMarker) targetMarker.targetAlpha = 1.0;
-        }
       });
 
       // Raycast Hover Test
@@ -482,7 +455,7 @@ export default function GlobalGlobe() {
           setHoveredCountry(country);
 
           markersList.forEach((m) => {
-            m.targetScale = m.country.id === country.id ? 1.8 : m.country.isOrigin || m.targetAlpha > 0.5 ? 1.0 : 0.0;
+            m.targetScale = m.country.id === country.id ? 1.8 : 1.0;
           });
         }
 
@@ -501,7 +474,7 @@ export default function GlobalGlobe() {
           activeHovered = null;
           setHoveredCountry(null);
           markersList.forEach((m) => {
-            m.targetScale = m.country.isOrigin || m.targetAlpha > 0.5 ? 1.0 : 0.0;
+            m.targetScale = 1.0;
           });
         }
       }
@@ -509,7 +482,7 @@ export default function GlobalGlobe() {
       renderer.render(scene, camera);
     }
 
-    animate();
+    animateLoop();
 
     return () => {
       if (containerEl) {
@@ -525,14 +498,14 @@ export default function GlobalGlobe() {
   }, []);
 
   return (
-    <div className="relative h-full w-full select-none overflow-visible">
+    <div className="relative h-full w-full select-none overflow-hidden">
       {/* 3D Canvas Mount Point */}
       <div ref={mountRef} className="h-full w-full" />
 
-      {/* Floating Tooltip (Ultra-Transparent Glassmorphism) */}
+      {/* Floating Glass Tooltip */}
       {hoveredCountry && (
         <div
-          className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-[130%] rounded-2xl border border-white/60 bg-white/30 px-4 py-3 text-xs text-slate-900 shadow-[0_16px_40px_rgba(0,0,0,0.15)] backdrop-blur-2xl transition-all duration-150 whitespace-nowrap"
+          className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-[130%] rounded-2xl border border-white/60 bg-white/40 px-4 py-3 text-xs text-slate-900 shadow-[0_16px_40px_rgba(0,0,0,0.15)] backdrop-blur-2xl transition-all duration-150 whitespace-nowrap"
           style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
         >
           <div className="flex items-center gap-2 font-extrabold text-slate-900 text-sm">

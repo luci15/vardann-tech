@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   motion,
   useScroll,
   useSpring,
   useTransform,
+  useMotionValue,
+  animate,
   type MotionValue,
 } from "framer-motion";
 import { capabilities, type Capability } from "@/lib/content";
@@ -14,6 +17,15 @@ import TechIcon from "@/components/ui/TechIcon";
 
 const N = capabilities.length;
 const SEGMENT_VH = 70;
+
+const SERVICE_HREFS: Record<string, string> = {
+  "advanced-ndt": "/services/advanced-ndt",
+  "conventional-ndt": "/services/conventional-ndt",
+  "inspection-services": "/services/destructive-testing-training",
+  "metallography": "/services/destructive-testing-training",
+  "precision-manufacturing": "/services/manufacturing",
+  "training-certification": "/services/destructive-testing-training",
+};
 
 function DeckCard({
   card,
@@ -26,7 +38,7 @@ function DeckCard({
 }) {
   const depth = useTransform(position, (p) => index - p);
 
-  // Single Card Smooth Rollback Transforms (No Stack Deck Peeking)
+  // Single Card Smooth Rollback Transforms
   const y = useTransform(depth, [-1, -0.5, 0, 0.5, 1], [-180, -90, 0, 120, 200]);
   const scale = useTransform(depth, [-1, 0, 1], [0.94, 1, 0.96]);
   const rotateX = useTransform(depth, [-1, 0, 1], [12, 0, -8]);
@@ -34,6 +46,7 @@ function DeckCard({
   const zIndex = useTransform(depth, (d) => (Math.abs(d) < 0.5 ? 20 : 0));
 
   const tags = card.subtitle.split(" / ");
+  const targetHref = SERVICE_HREFS[card.id] || "/services";
 
   return (
     <motion.div
@@ -81,7 +94,18 @@ function DeckCard({
         <p className="mt-4 max-w-md text-base leading-relaxed text-white/70 sm:text-lg">
           {card.description}
         </p>
-        <div className="mt-6 h-[2px] w-10 bg-gold" />
+        
+        {/* Explore Service Interactive Button */}
+        <div className="mt-6 flex items-center gap-4">
+          <Link
+            href={targetHref}
+            className="inline-flex items-center gap-2 rounded-xl bg-gold px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-navy shadow-md transition-all duration-300 hover:bg-amber-300 hover:shadow-lg hover:scale-105 active:scale-95"
+          >
+            <span>Explore Service</span>
+            <span className="text-sm">&rarr;</span>
+          </Link>
+          <div className="h-[2px] w-10 bg-gold/50" />
+        </div>
       </div>
     </motion.div>
   );
@@ -90,36 +114,59 @@ function DeckCard({
 export default function ServiceDeck() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const isClickLocked = useRef(false);
+  const lockTimer = useRef<NodeJS.Timeout | null>(null);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
 
-  const smoothed = useSpring(scrollYProgress, {
+  const smoothedScroll = useSpring(scrollYProgress, {
     stiffness: 140,
     damping: 26,
     mass: 0.4,
   });
-  const position = useTransform(smoothed, [0, 1], [0, N - 1]);
 
+  const scrollPosition = useTransform(smoothedScroll, [0, 1], [0, N - 1]);
+  const activePosition = useMotionValue(0);
+
+  // Sync scroll position to activePosition when not locked by a button click
   useEffect(() => {
-    const unsubscribe = position.on("change", (p) => {
-      const idx = Math.min(N - 1, Math.max(0, Math.round(p)));
-      setActive((prev) => (prev === idx ? prev : idx));
+    const unsub = scrollPosition.on("change", (p) => {
+      if (!isClickLocked.current) {
+        activePosition.set(p);
+        const idx = Math.min(N - 1, Math.max(0, Math.round(p)));
+        setActive((prev) => (prev === idx ? prev : idx));
+      }
     });
-    return unsubscribe;
-  }, [position]);
+    return unsub;
+  }, [scrollPosition, activePosition]);
 
   const goTo = (i: number) => {
     setActive(i);
+    isClickLocked.current = true;
+
+    // Smoothly animate the card position directly to the clicked index
+    animate(activePosition, i, {
+      duration: 0.45,
+      ease: [0.16, 1, 0.3, 1],
+    });
+
     const el = sectionRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const total = rect.height - window.innerHeight;
-    if (total <= 0) return;
-    const targetY = window.scrollY + rect.top + (i / (N - 1)) * total;
-    window.scrollTo({ top: targetY, behavior: "smooth" });
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const total = rect.height - window.innerHeight;
+      if (total > 0) {
+        const targetY = window.scrollY + rect.top + (i / (N - 1)) * total;
+        window.scrollTo({ top: targetY, behavior: "smooth" });
+      }
+    }
+
+    if (lockTimer.current) clearTimeout(lockTimer.current);
+    lockTimer.current = setTimeout(() => {
+      isClickLocked.current = false;
+    }, 900);
   };
 
   return (
@@ -153,19 +200,19 @@ export default function ServiceDeck() {
                     key={c.id}
                     type="button"
                     onClick={() => goTo(i)}
-                    className={`flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-left transition-colors duration-300 sm:px-4 sm:py-2.5 ${
+                    className={`flex shrink-0 items-center gap-2.5 rounded-xl px-4 py-2.5 text-left transition-all duration-300 cursor-pointer ${
                       isActive
-                        ? "bg-white shadow-md ring-1 ring-vblue/20"
-                        : "bg-white/40 hover:bg-white/70 lg:bg-transparent"
+                        ? "bg-white shadow-md ring-1 ring-vblue/30 scale-[1.02]"
+                        : "bg-white/40 hover:bg-white/70 lg:bg-transparent hover:translate-x-1"
                     }`}
                   >
                     <span
-                      className={`h-1.5 w-1.5 shrink-0 rounded-full transition-colors ${
-                        isActive ? "bg-gold" : "bg-steel/40"
+                      className={`h-2 w-2 shrink-0 rounded-full transition-colors ${
+                        isActive ? "bg-gold shadow-[0_0_8px_rgba(250,204,21,0.6)]" : "bg-steel/40"
                       }`}
                     />
                     <span
-                      className={`text-eyebrow text-[0.62rem] ${isActive ? "text-vblue" : "text-steel"}`}
+                      className={`text-eyebrow text-[0.65rem] ${isActive ? "text-vblue font-bold" : "text-steel"}`}
                     >
                       {c.number}
                     </span>
@@ -184,7 +231,7 @@ export default function ServiceDeck() {
 
           <div className="relative h-[380px] pt-16 sm:h-[400px]">
             {capabilities.map((c, i) => (
-              <DeckCard key={c.id} card={c} index={i} position={position} />
+              <DeckCard key={c.id} card={c} index={i} position={activePosition} />
             ))}
           </div>
         </div>
@@ -192,6 +239,3 @@ export default function ServiceDeck() {
     </section>
   );
 }
-
-
-
