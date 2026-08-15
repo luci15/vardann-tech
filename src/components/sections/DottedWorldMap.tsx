@@ -117,9 +117,13 @@ export default function DottedWorldMap() {
     const scene = new THREE.Scene();
     scene.background = null;
 
-    const initialZ = width < 640 ? 28.5 : width < 1024 ? 24.5 : 21.5;
-    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
-    camera.position.set(0, 0, initialZ);
+    const aspect = width / height;
+    const initialFov = width < 640 ? (aspect < 1.05 ? 46 : 42) : 40;
+    const initialY = width < 640 ? (aspect < 1.05 ? -0.65 : -0.4) : width < 1024 ? -0.2 : 0;
+    const initialZ = width < 640 ? (aspect < 1.05 ? 23.2 : 22.4) : width < 1024 ? 21.8 : 21.5;
+
+    const camera = new THREE.PerspectiveCamera(initialFov, aspect, 0.1, 1000);
+    camera.position.set(0, initialY, initialZ);
 
     let renderer: THREE.WebGLRenderer;
     try {
@@ -243,11 +247,11 @@ export default function DottedWorldMap() {
 
       // Core 3D Dot Mesh
       const dotMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(country.isOrigin ? 0.35 : 0.25, 24, 24),
+        new THREE.SphereGeometry(country.isOrigin ? 0.42 : 0.28, 24, 24),
         new THREE.MeshStandardMaterial({
           color,
           emissive: color,
-          emissiveIntensity: 4.5,
+          emissiveIntensity: 4.8,
           roughness: 0.05,
           transparent: true,
           opacity: 1.0,
@@ -255,9 +259,9 @@ export default function DottedWorldMap() {
       );
       markerContainer.add(dotMesh);
 
-      // Hitbox Target for Mobile Touch & Mouse Hovering
+      // Hitbox Target for Mobile Touch & Mouse Hovering (Large target for effortless touch precision)
       const hitMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(1.6, 12, 12),
+        new THREE.SphereGeometry(2.2, 12, 12),
         new THREE.MeshBasicMaterial({ visible: false })
       );
       hitMesh.userData = { country };
@@ -275,7 +279,7 @@ export default function DottedWorldMap() {
           depthWrite: false,
         })
       );
-      sprite.scale.set(1.2, 1.2, 1.0);
+      sprite.scale.set(1.4, 1.4, 1.0);
       markerContainer.add(sprite);
 
       // Pulsing Ring
@@ -385,19 +389,33 @@ export default function DottedWorldMap() {
     containerEl.addEventListener("pointermove", handlePointerMove);
     containerEl.addEventListener("touchstart", handleTouchStart, { passive: true });
 
-    // Resize Observer
+    // Resize Observer with Dynamic Aspect Ratio & FOV Alignment
     const resizeObserver = new ResizeObserver(() => {
       if (!containerEl || !camera || !renderer) return;
       const w = containerEl.clientWidth;
       const h = containerEl.clientHeight || w;
-      camera.aspect = w / h;
+      const aspect = w / h;
+      camera.aspect = aspect;
 
       if (w < 640) {
-        camera.position.z = 28.5;
+        // Mobile viewports (portrait & landscape)
+        if (aspect < 1.05) {
+          // Compact phone screen in portrait (e.g. 375x410, 412x450)
+          camera.fov = 46;
+          camera.position.set(0, -0.65, 23.2);
+        } else {
+          // Mobile landscape / wider phone view
+          camera.fov = 42;
+          camera.position.set(0, -0.4, 22.4);
+        }
       } else if (w < 1024) {
-        camera.position.z = 24.5;
+        // Tablets
+        camera.fov = 40;
+        camera.position.set(0, -0.2, 21.8);
       } else {
-        camera.position.z = 21.5;
+        // Desktop displays
+        camera.fov = 40;
+        camera.position.set(0, 0, 21.5);
       }
 
       camera.updateProjectionMatrix();
