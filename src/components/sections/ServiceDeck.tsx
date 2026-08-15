@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   motion,
   useScroll,
   useSpring,
   useTransform,
+  useMotionValue,
+  animate,
   type MotionValue,
 } from "framer-motion";
 import { capabilities, type Capability } from "@/lib/content";
@@ -15,15 +18,14 @@ import TechIcon from "@/components/ui/TechIcon";
 const N = capabilities.length;
 const SEGMENT_VH = 70;
 
-// Deck geometry, keyed on a card's continuous distance from the front of the
-// stack ("depth"). Because depth is a float driven straight off scroll
-// progress, every card eases through these values instead of snapping
-// between them — that's what makes one card feel like it's sliding back as
-// the next comes forward.
-const DEPTH_STOPS = [-1, 0, 1, 2, 3];
-const Y_AT_DEPTH = [170, 0, -34, -62, -84];
-const SCALE_AT_DEPTH = [1.05, 1, 0.94, 0.89, 0.85];
-const BRIGHTNESS_AT_DEPTH = [1, 1, 0.82, 0.66, 0.55];
+const SERVICE_HREFS: Record<string, string> = {
+  "advanced-ndt": "/services/advanced-ndt",
+  "conventional-ndt": "/services/conventional-ndt",
+  "inspection-services": "/services/destructive-testing-training",
+  "metallography": "/services/destructive-testing-training",
+  "precision-manufacturing": "/services/manufacturing",
+  "training-certification": "/services/destructive-testing-training",
+};
 
 function DeckCard({
   card,
@@ -32,24 +34,19 @@ function DeckCard({
 }: {
   card: Capability;
   index: number;
-  /** Continuous front-of-stack pointer, 0..N-1. */
   position: MotionValue<number>;
 }) {
   const depth = useTransform(position, (p) => index - p);
 
-  const y = useTransform(depth, DEPTH_STOPS, Y_AT_DEPTH);
-  const scale = useTransform(depth, DEPTH_STOPS, SCALE_AT_DEPTH);
-  // Fade out once a card has dropped past the front, and again as it falls
-  // off the back of the visible stack.
-  const opacity = useTransform(depth, [-1, -0.55, -0.1, 2.2, 3], [0, 0, 1, 1, 0]);
-  const brightness = useTransform(depth, DEPTH_STOPS, BRIGHTNESS_AT_DEPTH);
-  const filter = useTransform(brightness, (b) => `brightness(${b})`);
-  // Nearest-to-front paints on top; passed cards drop below the deck.
-  const zIndex = useTransform(depth, (d) =>
-    d < -0.05 ? 0 : Math.round(N - Math.abs(d)),
-  );
+  // Single Card Smooth Rollback Transforms
+  const y = useTransform(depth, [-1, -0.5, 0, 0.5, 1], [-180, -90, 0, 120, 200]);
+  const scale = useTransform(depth, [-1, 0, 1], [0.94, 1, 0.96]);
+  const rotateX = useTransform(depth, [-1, 0, 1], [12, 0, -8]);
+  const opacity = useTransform(depth, [-0.85, -0.4, 0, 0.4, 0.85], [0, 1, 1, 1, 0]);
+  const zIndex = useTransform(depth, (d) => (Math.abs(d) < 0.5 ? 20 : 0));
 
   const tags = card.subtitle.split(" / ");
+  const targetHref = SERVICE_HREFS[card.id] || "/services";
 
   return (
     <motion.div
@@ -57,10 +54,10 @@ function DeckCard({
       style={{
         y,
         scale,
+        rotateX,
         opacity,
-        filter,
         zIndex,
-        transformOrigin: "top center",
+        transformOrigin: "center center",
         willChange: "transform, opacity",
       }}
     >
@@ -97,7 +94,18 @@ function DeckCard({
         <p className="mt-4 max-w-md text-base leading-relaxed text-white/70 sm:text-lg">
           {card.description}
         </p>
-        <div className="mt-6 h-[2px] w-10 bg-gold" />
+        
+        {/* Explore Service Interactive Button */}
+        <div className="mt-6 flex items-center gap-4">
+          <Link
+            href={targetHref}
+            className="inline-flex items-center gap-2 rounded-xl bg-gold px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-navy shadow-md transition-all duration-300 hover:bg-amber-300 hover:shadow-lg hover:scale-105 active:scale-95"
+          >
+            <span>Explore Service</span>
+            <span className="text-sm">&rarr;</span>
+          </Link>
+          <div className="h-[2px] w-10 bg-gold/50" />
+        </div>
       </div>
     </motion.div>
   );
@@ -106,41 +114,59 @@ function DeckCard({
 export default function ServiceDeck() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const isClickLocked = useRef(false);
+  const lockTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Scroll progress across the section's tall scroll band, 0 at the moment it
-  // pins and 1 when it releases.
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
 
-  // A light spring keeps the deck gliding instead of tracking the wheel
-  // step-for-step, which is what read as "laggy" before.
-  const smoothed = useSpring(scrollYProgress, {
+  const smoothedScroll = useSpring(scrollYProgress, {
     stiffness: 140,
     damping: 26,
     mass: 0.4,
   });
-  const position = useTransform(smoothed, [0, 1], [0, N - 1]);
 
-  // Mirror the front card into React state, but only when the rounded index
-  // changes, so the side list re-renders once per card rather than per frame.
+  const scrollPosition = useTransform(smoothedScroll, [0, 1], [0, N - 1]);
+  const activePosition = useMotionValue(0);
+
+  // Sync scroll position to activePosition when not locked by a button click
   useEffect(() => {
-    const unsubscribe = position.on("change", (p) => {
-      const idx = Math.min(N - 1, Math.max(0, Math.round(p)));
-      setActive((prev) => (prev === idx ? prev : idx));
+    const unsub = scrollPosition.on("change", (p) => {
+      if (!isClickLocked.current) {
+        activePosition.set(p);
+        const idx = Math.min(N - 1, Math.max(0, Math.round(p)));
+        setActive((prev) => (prev === idx ? prev : idx));
+      }
     });
-    return unsubscribe;
-  }, [position]);
+    return unsub;
+  }, [scrollPosition, activePosition]);
 
   const goTo = (i: number) => {
+    setActive(i);
+    isClickLocked.current = true;
+
+    // Smoothly animate the card position directly to the clicked index
+    animate(activePosition, i, {
+      duration: 0.45,
+      ease: [0.16, 1, 0.3, 1],
+    });
+
     const el = sectionRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const total = rect.height - window.innerHeight;
-    if (total <= 0) return;
-    const targetY = window.scrollY + rect.top + (i / (N - 1)) * total;
-    window.scrollTo({ top: targetY, behavior: "smooth" });
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const total = rect.height - window.innerHeight;
+      if (total > 0) {
+        const targetY = window.scrollY + rect.top + (i / (N - 1)) * total;
+        window.scrollTo({ top: targetY, behavior: "smooth" });
+      }
+    }
+
+    if (lockTimer.current) clearTimeout(lockTimer.current);
+    lockTimer.current = setTimeout(() => {
+      isClickLocked.current = false;
+    }, 900);
   };
 
   return (
@@ -153,19 +179,20 @@ export default function ServiceDeck() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 [background:radial-gradient(ellipse_55%_50%_at_80%_20%,rgba(0,80,160,0.10),transparent_65%)]"
       />
-      <div className="sticky top-20 flex h-[calc(100vh-5rem)] w-full items-center overflow-hidden px-6 lg:px-10">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+      <div className="sticky top-16 flex h-[calc(100vh-4rem)] w-full items-center px-4 sm:px-6 lg:px-10">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
           <div>
             <p className="text-eyebrow text-[0.72rem] text-vblue">Services / 01</p>
-            <h2 className="mt-3 font-display text-4xl leading-[1.08] tracking-tight text-navy sm:text-5xl">
+            <h2 className="mt-2 font-display text-3xl leading-[1.08] tracking-tight text-navy sm:text-5xl">
               What Vardann <span className="text-vblue italic">Does.</span>
             </h2>
-            <p className="mt-4 max-w-sm text-base leading-relaxed text-body">
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-body sm:mt-4 sm:text-base">
               From advanced NDT and inspection to precision manufacturing and
               metallography — six disciplines, one standard of precision.
             </p>
 
-            <div className="mt-8 flex flex-col gap-1.5">
+            {/* Service Navigation Buttons */}
+            <div className="mt-4 flex max-w-full gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mt-6 lg:flex-col lg:overflow-visible lg:pb-0">
               {capabilities.map((c, i) => {
                 const isActive = i === active;
                 return (
@@ -173,22 +200,24 @@ export default function ServiceDeck() {
                     key={c.id}
                     type="button"
                     onClick={() => goTo(i)}
-                    className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-left transition-colors duration-300 ${
-                      isActive ? "bg-white shadow-sm" : "hover:bg-white/50"
+                    className={`flex shrink-0 items-center gap-2.5 rounded-xl px-4 py-2.5 text-left transition-all duration-300 cursor-pointer ${
+                      isActive
+                        ? "bg-white shadow-md ring-1 ring-vblue/30 scale-[1.02]"
+                        : "bg-white/40 hover:bg-white/70 lg:bg-transparent hover:translate-x-1"
                     }`}
                   >
                     <span
-                      className={`h-1.5 w-1.5 shrink-0 rounded-full transition-colors ${
-                        isActive ? "bg-gold" : "bg-steel/40"
+                      className={`h-2 w-2 shrink-0 rounded-full transition-colors ${
+                        isActive ? "bg-gold shadow-[0_0_8px_rgba(250,204,21,0.6)]" : "bg-steel/40"
                       }`}
                     />
                     <span
-                      className={`text-eyebrow text-[0.62rem] ${isActive ? "text-vblue" : "text-steel"}`}
+                      className={`text-eyebrow text-[0.65rem] ${isActive ? "text-vblue font-bold" : "text-steel"}`}
                     >
                       {c.number}
                     </span>
                     <span
-                      className={`text-sm transition-colors ${
+                      className={`text-xs whitespace-nowrap sm:text-sm transition-colors ${
                         isActive ? "font-bold text-navy" : "text-steel"
                       }`}
                     >
@@ -202,7 +231,7 @@ export default function ServiceDeck() {
 
           <div className="relative h-[380px] pt-16 sm:h-[400px]">
             {capabilities.map((c, i) => (
-              <DeckCard key={c.id} card={c} index={i} position={position} />
+              <DeckCard key={c.id} card={c} index={i} position={activePosition} />
             ))}
           </div>
         </div>

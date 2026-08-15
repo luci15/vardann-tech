@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { company } from "@/lib/content";
 import PageHeader from "@/components/ui/PageHeader";
+import StatsGrid from "@/components/about/StatsGrid";
+import SerpentineTimeline from "@/components/sections/SerpentineTimeline";
 import WhyVardann from "@/components/sections/WhyVardann";
 import CtaSection from "@/components/sections/CtaSection";
 
@@ -10,7 +12,7 @@ export const metadata: Metadata = {
 
 const stats = [
   { value: `${company.established}`, label: "Founded" },
-  { value: "4", label: "Regions Served" },
+  { value: "4+", label: "Regions Served" },
   { value: "6", label: "Core Disciplines" },
   { value: "ASME / NABL", label: "Standards Met" },
 ];
@@ -34,20 +36,12 @@ export default function AboutPage() {
               {company.history}
             </p>
 
-            <div className="mt-12 grid grid-cols-2 gap-6 border-t border-vblue/10 pt-10 sm:grid-cols-4">
-              {stats.map((s) => (
-                <div key={s.label} className="text-center sm:text-left">
-                  <p className="font-display text-3xl text-navy sm:text-4xl">
-                    {s.value}
-                  </p>
-                  <p className="text-eyebrow mt-1.5 text-[0.62rem] text-vblue">
-                    {s.label}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <StatsGrid stats={stats} />
           </div>
         </section>
+
+        {/* Serpentine Timeline Section */}
+        <SerpentineTimeline />
 
         <WhyVardann />
       </div>
