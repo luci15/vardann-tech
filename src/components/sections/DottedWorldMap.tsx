@@ -25,45 +25,48 @@ export const ORIGIN_COUNTRY: CountryData = {
 };
 
 export const DESTINATION_COUNTRIES: CountryData[] = [
-  { id: "usa", name: "USA", flag: "🇺🇸", lat: 34.0522, lon: -118.2437, capital: "Washington D.C. / LA" },
+  { id: "usa", name: "USA", flag: "🇺🇸", lat: 37.0902, lon: -95.7129, capital: "Washington D.C. / LA" },
   { id: "egypt", name: "Egypt", flag: "🇪🇬", lat: 26.8206, lon: 30.8025, capital: "Cairo" },
   { id: "libya", name: "Libya", flag: "🇱🇾", lat: 26.3351, lon: 17.2283, capital: "Tripoli" },
   { id: "iran", name: "Iran", flag: "🇮🇷", lat: 32.4279, lon: 53.688, capital: "Tehran" },
   { id: "saudi_arabia", name: "Saudi Arabia", flag: "🇸🇦", lat: 23.8859, lon: 45.0792, capital: "Riyadh" },
-  { id: "russia", name: "Russia", flag: "🇷🇺", lat: 61.524, lon: 105.3188, capital: "Moscow" },
+  { id: "russia", name: "Russia", flag: "🇷🇺", lat: 55.7558, lon: 37.6173, capital: "Moscow" },
 ];
 
 const ALL_COUNTRIES = [ORIGIN_COUNTRY, ...DESTINATION_COUNTRIES];
 
-// Map lat/lon to 3D map plane coordinates
+// Map lat/lon to 3D map plane coordinates matching 0.5 larger map scale (9% margin)
 function latLongTo3DMapPlane(lat: number, lon: number, planeWidth = 52, planeHeight = 26): THREE.Vector3 {
   const normX = (lon + 180) / 360.0;
   const normY = (90 - lat) / 180.0;
 
-  const marginX = 0.18;
-  const marginY = 0.12;
+  const marginX = 0.09; // 9% margin left/right (50% larger map scale!)
+  const marginY = 0.06; // 6% margin top/bottom
 
   const scaledX = marginX + normX * (1.0 - 2 * marginX);
   const scaledY = marginY + normY * (1.0 - 2 * marginY);
 
   const x = (scaledX - 0.5) * planeWidth;
-  const y = (0.5 - scaledY) * planeHeight;
-  const z = -Math.pow(x / 24, 2) * 1.6 - Math.pow(y / 14, 2) * 0.6 + 0.15;
+  const baseY = (0.5 - scaledY) * planeHeight;
+
+  // Semicircle Arch Y-bending & Z-curvature
+  const y = baseY - Math.pow(x / 24, 2) * 2.5;
+  const z = -Math.pow(x / 24, 2) * 3.2 - Math.pow(baseY / 12, 2) * 1.2 + 0.15;
   return new THREE.Vector3(x, y, z);
 }
 
 function createGlowSpriteTexture(): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
-  canvas.width = 128;
-  canvas.height = 128;
+  canvas.width = 256;
+  canvas.height = 256;
   const ctx = canvas.getContext("2d")!;
-  const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  const grad = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
   grad.addColorStop(0.0, "rgba(255, 255, 255, 1)");
   grad.addColorStop(0.25, "#ffea00");
   grad.addColorStop(0.55, "rgba(255, 234, 0, 0.35)");
   grad.addColorStop(1.0, "rgba(0, 0, 0, 0)");
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 128, 128);
+  ctx.fillRect(0, 0, 256, 256);
   return new THREE.CanvasTexture(canvas);
 }
 
@@ -92,20 +95,26 @@ export default function DottedWorldMap() {
     const width = containerEl.clientWidth || window.innerWidth;
     const height = containerEl.clientHeight || 550;
 
-    // 1. Scene & Camera Setup (Dynamic FOV & Position for Mobile Devices)
+    // 1. Scene & Camera Setup
     const scene = new THREE.Scene();
     scene.background = null;
 
-    const initialZ = width < 640 ? 27.5 : width < 1024 ? 23.5 : 20.5;
+    const initialZ = width < 640 ? 28.5 : width < 1024 ? 24.5 : 21.5;
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
     camera.position.set(0, 0, initialZ);
 
     let renderer: THREE.WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        powerPreference: "high-performance",
+        precision: "highp",
+      });
       renderer.setClearColor(0x000000, 0);
-      renderer.setSize(width, height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(width, height, true);
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      renderer.setPixelRatio(dpr);
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       containerEl.appendChild(renderer.domElement);
     } catch (e) {
@@ -121,27 +130,29 @@ export default function DottedWorldMap() {
     sunLight.position.set(15, 18, 20);
     scene.add(sunLight);
 
-    // Controls: Locked for clean view
+    // Controls: Locked
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableRotate = false;
     controls.enableZoom = false;
     controls.enablePan = false;
 
-    // 2. Fixed Tilted 3D Map Group
+    // 2. Fixed Tilted 3D Map Group BENT into Semicircle Arch Dome
     const mapGroup = new THREE.Group();
-    mapGroup.rotation.x = -0.32;
+    mapGroup.rotation.x = -0.28;
     scene.add(mapGroup);
 
     const planeWidth = 52;
     const planeHeight = 26;
-    const mapGeo = new THREE.PlaneGeometry(planeWidth, planeHeight, 80, 40);
+    const mapGeo = new THREE.PlaneGeometry(planeWidth, planeHeight, 90, 45);
 
-    // 3D Surface Curvature
+    // Bend left and right rectangle corners downward and inward into a smooth Semicircle Arch Dome!
     const pos = mapGeo.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       const vx = pos.getX(i);
       const vy = pos.getY(i);
-      const vz = -Math.pow(vx / 24, 2) * 1.6 - Math.pow(vy / 14, 2) * 0.6;
+      const archY = vy - Math.pow(vx / 24, 2) * 2.5;
+      const vz = -Math.pow(vx / 24, 2) * 3.2 - Math.pow(vy / 12, 2) * 1.2;
+      pos.setY(i, archY);
       pos.setZ(i, vz);
     }
     mapGeo.computeVertexNormals();
@@ -156,6 +167,12 @@ export default function DottedWorldMap() {
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load("/earth-vector-ref-colors.png", (tex) => {
       tex.colorSpace = THREE.SRGBColorSpace;
+      tex.generateMipmaps = true;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      if (renderer.capabilities) {
+        tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      }
       mapMat.map = tex;
       mapMat.needsUpdate = true;
     });
@@ -163,8 +180,10 @@ export default function DottedWorldMap() {
     const mapMesh = new THREE.Mesh(mapGeo, mapMat);
     mapGroup.add(mapMesh);
 
-    // 3. Yellow Sun-Yellow Hover Points (Slightly Scaled for Touch)
+    // 3. Sun-Yellow Hover Points
     const glowTexture = createGlowSpriteTexture();
+    glowTexture.minFilter = THREE.LinearFilter;
+
     const markersGroup = new THREE.Group();
     mapGroup.add(markersGroup);
 
@@ -180,11 +199,11 @@ export default function DottedWorldMap() {
 
       // Core 3D Dot Mesh
       const dotMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(country.isOrigin ? 0.35 : 0.25, 16, 16),
+        new THREE.SphereGeometry(country.isOrigin ? 0.35 : 0.25, 24, 24),
         new THREE.MeshStandardMaterial({
           color,
           emissive: color,
-          emissiveIntensity: 4.0,
+          emissiveIntensity: 4.5,
           roughness: 0.05,
           transparent: true,
           opacity: 1.0,
@@ -192,9 +211,9 @@ export default function DottedWorldMap() {
       );
       markerContainer.add(dotMesh);
 
-      // Hitbox Target (Generous size for mobile touch taps)
+      // Hitbox Target for Mobile Touch & Mouse Hovering
       const hitMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(1.4, 12, 12),
+        new THREE.SphereGeometry(1.6, 12, 12),
         new THREE.MeshBasicMaterial({ visible: false })
       );
       hitMesh.userData = { country };
@@ -207,7 +226,7 @@ export default function DottedWorldMap() {
           map: glowTexture,
           color,
           transparent: true,
-          opacity: 0.9,
+          opacity: 0.95,
           blending: THREE.AdditiveBlending,
           depthWrite: false,
         })
@@ -297,7 +316,7 @@ export default function DottedWorldMap() {
       });
     });
 
-    // 5. Pointer / Touch Event Handlers for Mobile & Desktop
+    // 5. Pointer & Touch Events
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2(-1000, -1000);
     let activeHovered: CountryData | null = null;
@@ -322,24 +341,26 @@ export default function DottedWorldMap() {
     containerEl.addEventListener("pointermove", handlePointerMove);
     containerEl.addEventListener("touchstart", handleTouchStart, { passive: true });
 
-    // Resize Observer for Dynamic Mobile Camera Distance
+    // Resize Observer
     const resizeObserver = new ResizeObserver(() => {
       if (!containerEl || !camera || !renderer) return;
       const w = containerEl.clientWidth;
       const h = containerEl.clientHeight || w;
       camera.aspect = w / h;
 
-      // Adapt camera Z distance dynamically to fit all 7 continents on small mobile screens
       if (w < 640) {
         camera.position.z = 28.5;
       } else if (w < 1024) {
-        camera.position.z = 24.0;
+        camera.position.z = 24.5;
       } else {
-        camera.position.z = 20.5;
+        camera.position.z = 21.5;
       }
 
       camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      renderer.setPixelRatio(dpr);
+      renderer.setSize(w, h, true);
     });
     resizeObserver.observe(containerEl);
 
@@ -361,16 +382,19 @@ export default function DottedWorldMap() {
 
       // Update Markers Pulse & Growth
       markersList.forEach((m) => {
-        m.pulseTime += delta * 3;
+        m.pulseTime += delta * 3.5;
         m.visibilityAlpha += (m.targetAlpha - m.visibilityAlpha) * 0.12;
 
         if (m.dotMesh?.material) m.dotMesh.material.opacity = m.visibilityAlpha;
-        if (m.sprite?.material) m.sprite.material.opacity = m.visibilityAlpha * 0.9;
+        if (m.sprite?.material) {
+          const pulseIntensity = 0.75 + Math.sin(m.pulseTime * 2) * 0.25;
+          m.sprite.material.opacity = m.visibilityAlpha * pulseIntensity;
+        }
 
         if (m.visibilityAlpha > 0.05 && m.ringMesh?.material) {
           const phase = (m.pulseTime % (Math.PI * 2)) / (Math.PI * 2);
-          m.ringMesh.scale.setScalar(1.0 + phase * 1.4);
-          m.ringMesh.material.opacity = (1.0 - phase) * 0.85 * m.visibilityAlpha;
+          m.ringMesh.scale.setScalar(1.0 + phase * 1.5);
+          m.ringMesh.material.opacity = (1.0 - phase) * 0.9 * m.visibilityAlpha;
         }
 
         m.currentScale += (m.targetScale - m.currentScale) * 0.15;
@@ -431,10 +455,12 @@ export default function DottedWorldMap() {
           intersects[0].object.getWorldPosition(worldPos);
           const screenPos = worldPos.project(camera);
           const rect = containerEl.getBoundingClientRect();
-          const x = (screenPos.x * 0.5 + 0.5) * rect.width;
-          const y = (-(screenPos.y * 0.5) + 0.5) * rect.height;
+          const rawX = (screenPos.x * 0.5 + 0.5) * rect.width;
+          const rawY = (-(screenPos.y * 0.5) + 0.5) * rect.height;
 
-          setTooltipPos({ x, y });
+          const clampedX = Math.min(Math.max(90, rawX), rect.width - 90);
+
+          setTooltipPos({ x: clampedX, y: rawY });
         }
       } else {
         if (activeHovered !== null) {
@@ -466,14 +492,14 @@ export default function DottedWorldMap() {
   }, []);
 
   return (
-    <div className="relative h-full w-full select-none overflow-hidden">
+    <div className="relative h-full w-full select-none overflow-visible">
       {/* 3D Canvas Mount Point */}
       <div ref={mountRef} className="h-full w-full" />
 
-      {/* Floating Glass Tooltip (Optimized for Touch & Mobile Viewports) */}
+      {/* Floating Glass Tooltip */}
       {hoveredCountry && (
         <div
-          className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-[130%] rounded-2xl border border-white/60 bg-white/50 px-3.5 py-2.5 text-xs text-slate-900 shadow-[0_16px_40px_rgba(0,0,0,0.15)] backdrop-blur-2xl transition-all duration-150 whitespace-nowrap"
+          className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-[125%] rounded-2xl border border-white/80 bg-white/95 px-4 py-2.5 text-xs text-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.22)] backdrop-blur-md transition-all duration-150 whitespace-nowrap"
           style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
         >
           <div className="flex items-center gap-2 font-extrabold text-slate-900 text-xs sm:text-sm">
