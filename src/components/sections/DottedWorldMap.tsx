@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 export interface CountryData {
   id: string;
@@ -70,6 +69,25 @@ function createGlowSpriteTexture(): THREE.CanvasTexture {
   return new THREE.CanvasTexture(canvas);
 }
 
+function createSmokeTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext("2d")!;
+
+  const grad = ctx.createRadialGradient(256, 256, 15, 256, 256, 240);
+  grad.addColorStop(0, "rgba(255, 255, 255, 0.95)");
+  grad.addColorStop(0.25, "rgba(140, 210, 255, 0.7)");
+  grad.addColorStop(0.5, "rgba(30, 130, 240, 0.35)");
+  grad.addColorStop(0.75, "rgba(10, 60, 140, 0.12)");
+  grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 512, 512);
+
+  return new THREE.CanvasTexture(canvas);
+}
+
 function isWebGLAvailable(): boolean {
   if (typeof window === "undefined" || typeof document === "undefined") return false;
   try {
@@ -116,6 +134,10 @@ export default function DottedWorldMap() {
       const dpr = Math.min(window.devicePixelRatio || 1, 3);
       renderer.setPixelRatio(dpr);
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      
+      // Allow smooth touch scrolling on mobile viewports
+      renderer.domElement.style.touchAction = "pan-y";
+      
       containerEl.appendChild(renderer.domElement);
     } catch (e) {
       console.warn("WebGL initialization failed:", e);
@@ -129,12 +151,6 @@ export default function DottedWorldMap() {
     const sunLight = new THREE.DirectionalLight(0xfff7ed, 2.2);
     sunLight.position.set(15, 18, 20);
     scene.add(sunLight);
-
-    // Controls: Locked
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableRotate = false;
-    controls.enableZoom = false;
-    controls.enablePan = false;
 
     // 2. Fixed Tilted 3D Map Group BENT into Semicircle Arch Dome
     const mapGroup = new THREE.Group();
@@ -179,6 +195,34 @@ export default function DottedWorldMap() {
 
     const mapMesh = new THREE.Mesh(mapGeo, mapMat);
     mapGroup.add(mapMesh);
+
+    // 3D Volumetric Smoky Atmosphere Rim Mesh behind Semicircle Arch
+    const smokeTexture = createSmokeTexture();
+    smokeTexture.minFilter = THREE.LinearFilter;
+
+    const smokeGeo = new THREE.PlaneGeometry(planeWidth + 10, planeHeight + 8, 90, 45);
+    const smokePos = smokeGeo.attributes.position;
+    for (let i = 0; i < smokePos.count; i++) {
+      const vx = smokePos.getX(i);
+      const vy = smokePos.getY(i);
+      const archY = vy - Math.pow(vx / 26, 2) * 2.8;
+      const vz = -Math.pow(vx / 26, 2) * 3.4 - Math.pow(vy / 14, 2) * 1.3 - 0.35;
+      smokePos.setY(i, archY);
+      smokePos.setZ(i, vz);
+    }
+    smokeGeo.computeVertexNormals();
+
+    const smokeMat = new THREE.MeshBasicMaterial({
+      map: smokeTexture,
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+
+    const smokeMesh = new THREE.Mesh(smokeGeo, smokeMat);
+    mapGroup.add(smokeMesh);
 
     // 3. Sun-Yellow Hover Points
     const glowTexture = createGlowSpriteTexture();
@@ -378,7 +422,10 @@ export default function DottedWorldMap() {
         sharedProgress = 0.0;
       }
 
-      controls.update();
+      // Soft drifting 3D smoke rim pulse
+      if (smokeMat) {
+        smokeMat.opacity = 0.6 + Math.sin(clock.getElapsedTime() * 1.5) * 0.15;
+      }
 
       // Update Markers Pulse & Growth
       markersList.forEach((m) => {

@@ -40,10 +40,18 @@ export default function GlobalPresence() {
           subtitle="Our products and services are trusted by clients across India, the Middle East, Africa, Eurasia, USA, and Russia."
         />
 
-        {/* Semicircle Curved Horizon Container (Curved Top & Bottom Edges with Light Smoky Edge Blend) */}
-        <div className="relative mt-16 sm:mt-24 lg:mt-28 mb-12 sm:mb-16 w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] h-[340px] sm:h-[480px] md:h-[560px] lg:h-[650px] overflow-visible [clip-path:ellipse(98%_100%_at_50%_100%)] [mask-image:radial-gradient(ellipse_98%_92%_at_50%_50%,black_88%,transparent_100%)]">
-          {/* Light Smoky Edge Fog Layer */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-vblue/5 via-transparent to-vblue/5 opacity-35 blur-xs" />
+        {/* Semicircle Curved Horizon Container with Multi-Layered Smoky Rim & Mobile Scroll Support */}
+        <div className="relative mt-16 sm:mt-24 lg:mt-28 mb-12 sm:mb-16 w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] h-[340px] sm:h-[480px] md:h-[560px] lg:h-[650px] overflow-visible touch-pan-y [clip-path:ellipse(98%_100%_at_50%_100%)] [mask-image:radial-gradient(ellipse_98%_92%_at_50%_50%,black_88%,transparent_100%)]">
+          
+          {/* Top Semicircle Rim Smoky Glow Line */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-sky-400/20 via-vblue/10 to-transparent blur-md z-10" />
+
+          {/* Volumetric Smoky Mist Fog Layers along Curved Border */}
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_95%_60%_at_50%_20%,rgba(56,189,248,0.16),rgba(0,102,204,0.08)_50%,transparent_80%)] blur-lg z-10" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_100%_80%_at_50%_100%,rgba(15,23,42,0.12),transparent_70%)] z-10" />
+
+          {/* Ambient Drifting Smoky Edge Fog */}
+          <div className="pointer-events-none absolute -inset-4 bg-gradient-to-r from-sky-300/10 via-vblue/15 to-sky-300/10 opacity-60 blur-xl z-0" />
 
           <DottedWorldMap />
         </div>
