@@ -4,10 +4,6 @@ import BestsellersCarousel from "./BestsellersCarousel";
 export default function Products() {
   return (
     <section className="relative overflow-hidden py-20 sm:py-28">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 [background:radial-gradient(ellipse_50%_50%_at_85%_10%,rgba(0,80,160,0.10),transparent_60%)]"
-      />
       <div className="relative mx-auto max-w-6xl px-6 lg:px-10">
         <SectionHeading
           eyebrow="Products"
