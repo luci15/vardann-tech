@@ -29,7 +29,7 @@ export default function BestsellersCarousel() {
   }, [total]);
 
   return (
-    <div className="relative px-12 sm:px-14">
+    <div className="relative px-4 sm:px-14">
       <div
         ref={trackRef}
         onScroll={handleScroll}

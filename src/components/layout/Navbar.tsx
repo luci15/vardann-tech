@@ -55,7 +55,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full px-3 pt-3 sm:px-5">
-      <div className="relative mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/15 bg-[linear-gradient(135deg,rgba(52,73,94,0.92),rgba(40,56,72,0.94)_55%,rgba(0,80,160,0.55))] px-5 py-2.5 shadow-[0_1px_0_0_rgba(255,255,255,0.12)_inset,0_18px_40px_-12px_rgba(0,80,160,0.4),0_10px_25px_-8px_rgba(0,0,0,0.55)] backdrop-blur-xl lg:px-7">
+      <div className="relative mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/15 bg-[linear-gradient(135deg,rgba(52,73,94,0.92),rgba(40,56,72,0.94)_55%,rgba(0,80,160,0.55))] px-4 py-2 shadow-[0_1px_0_0_rgba(255,255,255,0.12)_inset,0_18px_40px_-12px_rgba(0,80,160,0.4),0_10px_25px_-8px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:px-6 sm:py-2.5 lg:px-8">
         <Link href="/" onClick={() => setOpen(false)}>
           <Logo />
         </Link>

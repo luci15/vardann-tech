@@ -71,6 +71,10 @@ function MachiningMotif() {
   const round = (n: number) => Math.round(n * 1000) / 1000;
   const teeth = Array.from({ length: 10 }, (_, t) => {
     const angle = (t / 10) * Math.PI * 2;
+    const x1 = Number((60 + Math.cos(angle) * r).toFixed(2));
+    const y1 = Number((60 + Math.sin(angle) * r).toFixed(2));
+    const x2 = Number((60 + Math.cos(angle) * (r + 10)).toFixed(2));
+    const y2 = Number((60 + Math.sin(angle) * (r + 10)).toFixed(2));
     return (
       <line
         key={t}

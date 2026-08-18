@@ -45,7 +45,7 @@ export default function HeroFan({ products, className = "" }: HeroFanProps) {
                 transition={{
                   delay: 0.15 + i * 0.09,
                   duration: 0.75,
-                  ease: [0.16, 1, 0.3, 1],
+                  ease: [0.16, 1, 0.3, 1] as const,
                 }}
               >
                 <div className="relative h-full w-full overflow-hidden rounded-[1.25rem] border border-white/5 bg-white p-3.5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.55)] transition-shadow duration-500 hover:shadow-[0_30px_60px_-10px_rgba(0,80,160,0.4)]">
