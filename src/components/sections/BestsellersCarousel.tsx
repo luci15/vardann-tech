@@ -48,7 +48,7 @@ export default function BestsellersCarousel() {
               aria-hidden="true"
               className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-vblue/15 blur-2xl"
             />
-            <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-vblue/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-vblue/50 hover:shadow-xl">
+            <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-vblue/10 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-vblue/50 hover:shadow-xl">
               <div className="relative aspect-square w-full shrink-0">
                 <Image
                   src={p.image}
