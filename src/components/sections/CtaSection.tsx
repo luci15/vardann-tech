@@ -14,7 +14,23 @@ const fadeUp: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const } },
 };
 
-export default function CtaSection() {
+type CtaSectionProps = {
+  heading?: React.ReactNode;
+  headingClassName?: string;
+  subtitle?: React.ReactNode;
+};
+
+const DEFAULT_HEADING = (
+  <>
+    Let&rsquo;s Engineer <span className="text-gold italic">What&rsquo;s Next.</span>
+  </>
+);
+
+export default function CtaSection({
+  heading = DEFAULT_HEADING,
+  headingClassName = "text-4xl sm:text-6xl",
+  subtitle = "Talk to our team about your inspection, testing or manufacturing requirements.",
+}: CtaSectionProps = {}) {
   return (
     <section className="relative overflow-hidden bg-[linear-gradient(135deg,#283848,#0050a0)] py-20 sm:py-28">
       <div
@@ -32,12 +48,11 @@ export default function CtaSection() {
         whileInView="show"
         viewport={{ once: true, amount: 0.4 }}
       >
-        <motion.h2 variants={fadeUp} className="font-display text-4xl tracking-tight text-white sm:text-6xl">
-          Let&rsquo;s Engineer <span className="text-gold italic">What&rsquo;s Next.</span>
+        <motion.h2 variants={fadeUp} className={`font-display tracking-tight text-white ${headingClassName}`}>
+          {heading}
         </motion.h2>
         <motion.p variants={fadeUp} className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-white/75 sm:text-lg">
-          Talk to our team about your inspection, testing or manufacturing
-          requirements.
+          {subtitle}
         </motion.p>
         <motion.div variants={fadeUp}>
           <Link

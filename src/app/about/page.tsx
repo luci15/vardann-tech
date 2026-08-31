@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { company } from "@/lib/content";
-import PageHeader from "@/components/ui/PageHeader";
+import AboutHero from "@/components/about/AboutHero";
 import StatsGrid from "@/components/about/StatsGrid";
 import SerpentineTimeline from "@/components/sections/SerpentineTimeline";
 import WhyVardann from "@/components/sections/WhyVardann";
@@ -21,13 +21,9 @@ export default function AboutPage() {
   return (
     <>
       <div className="bg-continuous-light">
-        <PageHeader
-          eyebrow="About Us"
-          title="Company Profile."
-          subtitle={`Formerly known as ${company.formerlyKnownAs}. We have rebranded as ${company.name} to reflect our broader vision and global commitment to engineering excellence.`}
-        />
+        <AboutHero />
 
-        <section className="pb-20 sm:pb-28">
+        <section className="pb-10 sm:pb-14">
           <div className="mx-auto max-w-3xl px-6 lg:px-10">
             <p className="text-base leading-relaxed text-navy">
               {company.about}
@@ -35,7 +31,12 @@ export default function AboutPage() {
             <p className="mt-5 text-base leading-relaxed text-body">
               {company.history}
             </p>
+          </div>
 
+          {/* Wider than the paragraph column above — the stats cards need
+              more than max-w-3xl gives them, or values like "ASME / NABL"
+              and labels like "STANDARDS MET" wrap awkwardly. */}
+          <div className="mx-auto max-w-5xl px-6 lg:px-10">
             <StatsGrid stats={stats} />
           </div>
         </section>
@@ -46,22 +47,15 @@ export default function AboutPage() {
         <WhyVardann />
       </div>
 
-      <section className="relative overflow-hidden bg-[linear-gradient(135deg,#283848,#0050a0)] py-20 sm:py-28">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 [background:radial-gradient(ellipse_50%_60%_at_50%_50%,rgba(248,192,40,0.12),transparent_70%)]"
-        />
-        <div className="relative mx-auto max-w-3xl px-6 text-center lg:px-10">
-          <p className="font-display text-3xl leading-snug text-white italic sm:text-4xl">
-            &ldquo;{company.quote}&rdquo;
-          </p>
-          <p className="text-eyebrow mt-6 text-[0.65rem] text-gold">
-            {company.name}
-          </p>
-        </div>
-      </section>
-
-      <CtaSection />
+      {/* One CTA band instead of two stacked dark sections (a separate
+          quote block followed immediately by the standard CtaSection read
+          as redundant) — the quote becomes this section's heading, with
+          the usual Contact Us CTA kept underneath. */}
+      <CtaSection
+        heading={<span className="italic">&ldquo;{company.quote}&rdquo;</span>}
+        headingClassName="text-3xl sm:text-4xl leading-snug"
+        subtitle={<span className="text-eyebrow text-gold">{company.name}</span>}
+      />
     </>
   );
 }

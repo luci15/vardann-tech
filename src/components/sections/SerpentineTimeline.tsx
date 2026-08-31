@@ -70,19 +70,25 @@ export default function SerpentineTimeline() {
   return (
     <section
       ref={containerRef}
-      className="relative overflow-hidden py-24 sm:py-32 select-none"
+      className="relative overflow-hidden py-12 sm:py-16 select-none"
     >
       <div className="relative mx-auto max-w-5xl px-6 lg:px-10">
         {/* Section Heading */}
-        <div className="mx-auto max-w-2xl text-center mb-16">
+        <div className="mx-auto max-w-2xl text-center mb-10">
           <p className="text-eyebrow text-[0.72rem] text-vblue">Company Roadmap</p>
           <h2 className="mt-2 font-display text-3xl leading-[1.08] tracking-tight text-navy sm:text-5xl">
             Project Steps & <span className="text-vblue italic">Milestones.</span>
           </h2>
         </div>
 
-        {/* Desktop View: Exact Concentric Serpentine SVG Path & 230px Red Circles */}
-        <div className="relative hidden lg:block h-[1500px]">
+        {/* Desktop View: Exact Concentric Serpentine SVG Path & 230px Red Circles.
+            The wrapper's aspect ratio is locked to the SVG viewBox (1000x1500)
+            so the path and the absolutely-positioned circles always share the
+            same coordinate space — without this, the SVG scales to whatever
+            the section's actual content width is (~944px, from max-w-5xl minus
+            padding) while raw-pixel circle positions stay unscaled, drifting
+            the circles off the curve. */}
+        <div className="relative hidden lg:block aspect-[1000/1500] w-full">
           {/* Continuous Serpentine Line SVG */}
           <svg
             className="pointer-events-none absolute top-0 left-0 h-full w-full overflow-visible"
@@ -92,7 +98,7 @@ export default function SerpentineTimeline() {
             {/* Background Light Guide Track */}
             <path
               d="M 235,0 L 235,320 A 145 145 0 0 0 380 465 L 620,465 A 145 145 0 0 1 620 755 L 380,755 A 145 145 0 0 0 380 1045 L 620,1045 A 145 145 0 0 1 620 1335 L 620,1500"
-              stroke="rgba(0, 80, 160, 0.18)"
+              stroke="rgba(248, 192, 40, 0.25)"
               strokeWidth="4.5"
               fill="none"
             />
@@ -100,7 +106,7 @@ export default function SerpentineTimeline() {
             {/* Frame-by-Frame Travelling Animated Line */}
             <motion.path
               d="M 235,0 L 235,320 A 145 145 0 0 0 380 465 L 620,465 A 145 145 0 0 1 620 755 L 380,755 A 145 145 0 0 0 380 1045 L 620,1045 A 145 145 0 0 1 620 1335 L 620,1500"
-              stroke="#0050a0"
+              stroke="#f8c028"
               strokeWidth="5.5"
               strokeLinecap="round"
               fill="none"
@@ -154,7 +160,7 @@ export default function SerpentineTimeline() {
           {timelineSteps.map((step) => (
             <div key={step.number} className="flex flex-col items-center text-center">
               {/* Solid Red Circle */}
-              <div className="flex h-36 w-36 sm:h-44 sm:w-44 items-center justify-center rounded-full bg-[#c53030] shadow-xl text-white">
+              <div className="flex h-36 w-36 sm:h-44 sm:w-44 items-center justify-center rounded-full bg-vblue shadow-[0_18px_40px_rgba(0,80,160,0.35)] text-white">
                 <span className="font-mono text-2xl sm:text-3xl font-black">{step.year}</span>
               </div>
               
@@ -213,16 +219,26 @@ function DesktopStepRow({
     [isCircleLeft ? 35 : -35, 0]
   );
 
+  // All positions are expressed as % of the 1000x1500 viewBox coordinate
+  // space (see the wrapper's locked aspect-ratio above), not raw pixels —
+  // that's what keeps these in sync with the SVG path at any render width.
+  const circleSize = 230;
+  const r = circleSize / 2;
+  const pctX = (v: number) => `${(v / 1000) * 100}%`;
+  const pctY = (v: number) => `${(v / 1500) * 100}%`;
+
   return (
     <div
       className="absolute w-full"
-      style={{ top: `${circleY - 115}px` }}
+      style={{ top: pctY(circleY - r), height: pctY(1500) }}
     >
       {/* 1. Large 230px Solid Red Circle (Matching Reference Image) */}
       <motion.div
-        className="absolute h-[230px] w-[230px] rounded-full bg-[#c53030] shadow-[0_18px_40px_rgba(197,48,48,0.35)] flex items-center justify-center text-white"
+        className="absolute rounded-full bg-vblue shadow-[0_18px_40px_rgba(0,87,164,0.35)] flex items-center justify-center text-white"
         style={{
-          left: `${circleX - 115}px`,
+          left: pctX(circleX - r),
+          width: pctX(circleSize),
+          height: pctY(circleSize),
           scale: circleScale,
           opacity: opacity,
         }}
@@ -234,10 +250,11 @@ function DesktopStepRow({
 
       {/* 2. Pure Typography Text (NO BOXES / NO CARDS - Matching Reference Image) */}
       <motion.div
-        className="absolute top-[50px] max-w-[420px]"
+        className="absolute max-w-[420px]"
         style={{
-          left: isCircleLeft ? "540px" : "auto",
-          right: isCircleLeft ? "auto" : "540px",
+          top: pctY(50),
+          left: isCircleLeft ? pctX(540) : "auto",
+          right: isCircleLeft ? "auto" : pctX(540),
           textAlign: isCircleLeft ? "left" : "right",
           opacity: opacity,
           x: textX,

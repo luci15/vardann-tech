@@ -49,6 +49,63 @@ server before trusting it fixed — Next.js's `.next/cache/images` (plus the
 browser) will happily keep serving stale pre-removal bytes otherwise; clear
 `.next/cache/images` after reprocessing.
 
+**Second batch (Sept 2026):** client supplied a labeled 78-file folder
+`IMAGES-20260831T183334Z-1-001/IMAGES/` (real photos + some clean CAD-style
+renders, both legitimate — the "AI-generated concept art to exclude" rule
+only applies to files with "ChatGPT Image" in the filename, which are not
+used). Reviewed all 78, classified ~30 as genuine distinct products vs.
+excluded ~48 as service/process photos (people, workshops, ships, training
+rooms), duplicate probe-box shots, or the "ChatGPT Image *" files. Final
+`bestsellerProducts` grew from 10 to 24 entries — 4 existing entries got a
+better replacement photo from this batch (`welded-specimen-set`,
+`calibration-step-block-a`, `magnetic-yoke`, `tr-probe`), 14 new products
+added (IIW Type 1/V1/V2 calibration blocks, clad step block, radius gauge
+set, COD wedge block, PM-50 yoke, gauss meter, UV-A lamp, PWHT thermocouple
+wire, mini TR probe, single-element probe, probe membranes, weld pie
+gauge). Dropped candidates that were confident-real but produced
+unfixable background-removal artifacts (`DC Test Block`) or were
+near-duplicates of a kept item (ON-OFF yoke vs. carpet-background MPI
+yoke photo — kept the removable-background one and dropped the carpet
+one; several nearly-identical TR-probe tin-box photos — kept one).
+Metallography microscope/polisher photos in the folder were deliberately
+excluded from the product grid — real equipment, but not part of the
+company's own manufactured product line per the brochure.
+
+**Background removal — Sept 2026 revision.** The two-pass corner-flood-fill
+method above only works when the background is genuinely uniform. This
+batch's studio photos have a *radial vignette* (background brightness
+varies ~80 units corner-to-center), which broke that method entirely —
+verified visually by compositing onto a dark background (see below), not
+by eyeballing the raw PNG. Replaced with an edge-aware approach for this
+batch (`bg_remove2.py`/`bg_remove3.py` pattern, OpenCV + scipy): Sobel
+gradient magnitude thresholded into an edge mask, dilated by ~2px, then
+`scipy.ndimage.label` flood-fills every non-edge pixel connected to the
+image border — vignette gradients have low local gradient so they connect
+straight through, while the product's silhouette edge blocks the fill.
+A second cleanup pass reclassifies leftover background-colored islands
+that got trapped between object edges and stray text/label edges (common
+on the calibration-block renders, which have engraved text and leader-line
+annotations) by comparing each stray island's mean color against a
+locally-blurred background color estimate — this fixed blocky leftover
+patches that the pure edge method left on `v2-calibration-block` and
+`clad-step-block`. Textured/dark backgrounds (leather-grain surface behind
+`Pie Gauge.png`) don't fit either method (no clean edge ring, no uniform
+color) — left that one on its natural background rather than force a bad
+cutout.
+**Verification pitfall confirmed again:** the Read tool's image preview
+ignores the alpha channel entirely and always renders raw RGB, so a
+correctly-transparent PNG still looks fully opaque when opened directly —
+must composite onto a solid color with PIL (`Image.alpha_composite`) and
+read *that* file to see whether removal actually worked. Learned this the
+hard way after the first batch attempt looked like a total no-op.
+Real proof the pipeline works end-to-end: after wiring the new images into
+`content.ts`, `read_network_requests` on the live `/products` page during
+verification showed all 24 `_next/image` requests returning 200 (checking
+network requests directly, since programmatic `scroll_to`/`scroll` calls
+in this sandboxed Browser pane reliably produce blank screenshots on this
+page's scroll-triggered sections — same root cause as the rAF/scroll-event
+suppression noted below, not a regression from this change).
+
 ## Cursor image trail
 `src/components/ui/CursorImageTrail.tsx` — click-through sticker-trail
 overlay (mounted in `Hero.tsx`, scoped to that section). Tracks via a
@@ -75,10 +132,12 @@ twice; don't resurrect an earlier one without the user asking again:
    a **light** theme, not dark.
 
 Tokens (`src/app/globals.css` `@theme`): `--color-navy: #283848` (headings,
-navbar/footer bg, primary body text default), `--color-vblue: #0050A0`
-(primary buttons/links/borders), `--color-vblue-hover: #003F80` (primary
-button hover — darker), `--color-vblue-bright: #0058A0` (other hover/
-highlight accents — brighter), `--color-gold: #F8C028` (sparing accent only
+navbar/footer bg, primary body text default), `--color-vblue: #0057A4`
+(primary buttons/links/borders — **updated from #0050A0** in the 16-commit
+multi-session merge; grep `globals.css` before trusting any hex quoted here
+for vblue, it has moved once already), `--color-vblue-hover: #004583`
+(primary button hover — darker), `--color-vblue-bright: #0057A4` (other
+hover/highlight accents), `--color-gold: #F8C028` (sparing accent only
 — eyebrows, active nav state, numbers; client was explicit: keep it to
 ~5-10% of the interface, don't overuse), `--color-offwhite: #F8F8F8` (main
 section bg), `--color-lightblue: #E0F0F8` (alternating section bg + hover
@@ -225,6 +284,49 @@ that a light globe needs an edge cue against a light page — user flagged
 it immediately as an unwanted extra circle. Lesson: a light sphere with
 its own shadow/glow is usually enough definition on its own; don't add
 a second concentric shape "just in case" without checking a render first.
+
+## Git
+Remote `origin` → `https://github.com/millisheth1104/vardann-tech.git`, branch
+`main`. Commits land there directly (no PR flow observed so far). Local repo
+can drift behind origin from other sessions/collaborators pushing in parallel
+(seen a 16-commit gap once) — always `git pull` (or check `git status` for
+"behind") before pushing, not just before a destructive op.
+
+## Dev server / environment notes
+**Correction (confirmed by the user's own screenshot: Edge on their real
+desktop gets `ERR_CONNECTION_REFUSED` on localhost while the sandbox's
+server was "running" fine):** the Bash/PowerShell tool and the Browser-pane
+preview (`preview_start`) run inside Claude's own sandboxed tool environment,
+NOT on the user's physical Windows PC, even though `pwd` shows the same
+`C:\Users\Lenovo\...` path. `http://localhost:3010` is only reachable from
+inside that sandbox (the `preview_start`/Browser-pane tools) — it is never
+reachable from the user's own browser. To preview on their actual machine,
+the user must run `npm install` (if needed) and `npm run dev` themselves, in
+their own terminal, then open the port their own `next dev` prints (default
+3000, or whatever `.claude/launch.json`'s `dev` config/their local port-in-use
+resolves to — don't assume it'll be 3010 for them, that's this sandbox's
+`launch.json`-configured port). Never claim a `localhost` link will work in
+the user's own browser.
+
+After the big multi-session merge (16 commits, see below), `npm run dev`
+failed with `Module not found: Can't resolve 'three'` — `three` was listed in
+`package.json`/`package-lock.json` (used by the new `DottedWorldMap.tsx`
+globe/map components) but `node_modules` hadn't actually been updated on this
+machine since that dependency was added. Fixed with a plain `npm install`
+(added 8 packages). If a future pull adds/bumps a dependency, run `npm install`
+before assuming a "module not found" build error is a code bug.
+
+## Recent visual fixes (Products/bestsellers section)
+- `src/components/sections/Products.tsx` had a section-local radial-gradient
+  overlay (`radial-gradient(ellipse ... at 85% 10% ...)`) that broke the
+  page's single continuous background gradient, showing up as a visible
+  lighter band/seam across the top of the section. Removed it — don't
+  re-add a section-specific gradient patch here; the continuous background
+  wrapper already handles this section.
+- `src/components/sections/BestsellersCarousel.tsx` product cards: removed
+  the **resting** `shadow-sm` (was creating an unwanted shadow band under the
+  cards at rest) but kept `hover:shadow-xl` — user explicitly wants shadow
+  on hover only, not at rest. Don't remove the hover shadow too.
 
 ## Structure
 - `src/lib/content.ts` — all copy/data (services, products, capabilities).

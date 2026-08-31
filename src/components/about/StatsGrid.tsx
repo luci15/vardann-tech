@@ -1,20 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
 import { motion, useInView, animate } from "framer-motion";
-
-const GlobalGlobe = dynamic(() => import("@/components/sections/GlobalGlobe"), {
-  ssr: false,
-  loading: () => (
-    <div className="relative h-[260px] sm:h-[300px] w-[260px] sm:w-[300px] bg-transparent" />
-  ),
-});
+import { Calendar, Globe2, Layers, ShieldCheck, type LucideIcon } from "lucide-react";
 
 export type StatItem = {
   value: string;
   label: string;
 };
+
+const STAT_ICONS: LucideIcon[] = [Calendar, Globe2, Layers, ShieldCheck];
 
 function CounterValue({ targetStr, triggerCount }: { targetStr: string; triggerCount: boolean }) {
   const [displayValue, setDisplayValue] = useState(targetStr);
@@ -39,7 +34,7 @@ function CounterValue({ targetStr, triggerCount }: { targetStr: string; triggerC
   }, [triggerCount, numVal, isNumeric, hasPlus]);
 
   return (
-    <div className="font-display text-4xl sm:text-5xl font-[950] tracking-[-0.03em] leading-none text-navy mb-2">
+    <div className="font-display text-2xl sm:text-3xl font-[950] tracking-[-0.03em] leading-none text-navy">
       {isNumeric ? displayValue : targetStr}
     </div>
   );
@@ -65,46 +60,29 @@ export default function StatsGrid({ stats }: { stats: StatItem[] }) {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="mt-12 border-t border-vblue/15 pt-10 select-none"
-    >
-      {/* Side-by-Side Aligned Grid: Globe Far Left, Stats Grid Right */}
-      <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[320px_1fr] lg:gap-12">
-        
-        {/* Far-Left Column: Small 3D Light Globe (No Cropping, No White Background) */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.88, x: -40 }}
-          animate={hasTriggered ? { opacity: 1, scale: 1, x: 0 } : { opacity: 0, scale: 0.88, x: -40 }}
-          transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
-          className="relative h-[260px] sm:h-[300px] w-[260px] sm:w-[300px] lg:h-[320px] lg:w-[320px] shrink-0 justify-self-start lg:-ml-4 bg-transparent"
-        >
-          <GlobalGlobe />
-        </motion.div>
-
-        {/* Right Column: 4 Stats with Bulletproof Scroll Entrance Animations */}
-        <div className="grid grid-cols-2 gap-y-10 gap-x-8 sm:gap-x-12">
-          {stats.map((s, idx) => (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 35, scale: 0.94 }}
-              animate={hasTriggered ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 35, scale: 0.94 }}
-              transition={{
-                duration: 0.65,
-                delay: idx * 0.12,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="text-left"
-            >
+    <div ref={containerRef} className="mt-12 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+      {stats.map((s, idx) => {
+        const Icon = STAT_ICONS[idx % STAT_ICONS.length];
+        return (
+          <motion.div
+            key={s.label}
+            initial={{ opacity: 0, y: 24 }}
+            animate={hasTriggered ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+            transition={{ duration: 0.55, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-center gap-4 rounded-2xl border border-vblue/12 bg-white px-5 py-5 shadow-sm"
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-lightblue">
+              <Icon className="h-5 w-5 text-vblue" strokeWidth={1.75} />
+            </span>
+            <div>
               <CounterValue targetStr={s.value} triggerCount={hasTriggered} />
-              <div className="text-[0.72rem] font-[800] tracking-[0.1em] text-vblue uppercase">
+              <div className="mt-1 text-[0.66rem] font-[800] tracking-[0.1em] text-steel uppercase">
                 {s.label}
               </div>
-            </motion.div>
-          ))}
-        </div>
-
-      </div>
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }

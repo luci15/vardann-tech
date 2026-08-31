@@ -239,14 +239,104 @@ export const bestsellerProducts: Product[] = [
     image: "/products/calibration-step-block-b.png",
   },
   {
+    id: "iiw-type1-block",
+    category: "Calibration Standards",
+    name: "IIW Type 1 Calibration Block",
+    description:
+      "Precision-machined 1018 carbon steel reference block with an angle-beam scale, radius, and reference holes for probe calibration and sensitivity checks.",
+    spec: "1018 Carbon Steel — CNC/EDM machined to IIW tolerances",
+    icon: "testBlock",
+    image: "/products/iiw-type1-block.png",
+  },
+  {
+    id: "v1-calibration-block",
+    category: "Calibration Standards",
+    name: "V1 Calibration Block",
+    description:
+      "IIW-style V1 reference block with a graduated angle scale and reference hole, used to verify probe index point, beam angle, and resolution.",
+    spec: "V1/5 (A2) type test block",
+    icon: "testBlock",
+    image: "/products/v1-calibration-block.png",
+  },
+  {
+    id: "v2-calibration-block",
+    category: "Calibration Standards",
+    name: "V2 Calibration Block",
+    description:
+      "Compact V2-style calibration block in 1018 steel with a graduated angle scale from 35° to 85°, used for angle-probe verification in confined-access areas.",
+    spec: "V2/12.5mm — 1018 Steel",
+    icon: "testBlock",
+    image: "/products/v2-calibration-block.png",
+  },
+  {
+    id: "clad-step-block",
+    category: "Calibration Standards",
+    name: "Stainless-Clad Step Wedge Block",
+    description:
+      "5-step calibration block with a stainless steel cladding layer over a 1018 carbon steel base, used for thickness and sensitivity calibration on clad or overlay welds.",
+    spec: "1018 Carbon Steel base with 1mm stainless steel cladding",
+    icon: "testBlock",
+    image: "/products/clad-step-block.png",
+  },
+  {
+    id: "radius-gauge-block",
+    category: "Calibration Standards",
+    name: "Radius Reference Gauge Set",
+    description:
+      "Set of curved reference gauges spanning multiple radii, used to verify probe contact and calibrate curved-surface inspection setups.",
+    spec: "Radii from 2.5 to 20 (as marked on each gauge)",
+    icon: "testBlock",
+    image: "/products/radius-gauge-block.png",
+  },
+  {
+    id: "cod-wedge-block",
+    category: "Calibration Standards",
+    name: "COD Reference Wedge Block",
+    description:
+      "Machined wedge-profile reference block used for crack-opening-displacement (COD) gauge calibration.",
+    spec: "Custom sizes available on request",
+    icon: "wedge",
+    image: "/products/cod-wedge-block.png",
+  },
+  {
     id: "magnetic-yoke",
     category: "Conventional NDT",
-    name: "Magnetic Particle Yoke",
+    name: "AC Electromagnetic Yoke",
     description:
-      "Dual-pole electromagnetic yoke with articulating legs for magnetic particle testing on welds and castings.",
+      "Vardann-branded electromagnetic yoke with an on/off switch and articulating pole legs for magnetic particle testing on welds and castings.",
     spec: "Compatible with wet and dry magnetic particle media",
     icon: "magneticParticle",
     image: "/products/magnetic-yoke.png",
+  },
+  {
+    id: "pm50-yoke",
+    category: "Conventional NDT",
+    name: "PM-50 Permanent Magnetic Yoke",
+    description:
+      "Permanent-magnet yoke with articulating pole shoes and carry handle, used for magnetic particle inspection where an electrical supply isn't available.",
+    spec: "Compatible with wet and dry magnetic particle media",
+    icon: "magneticParticle",
+    image: "/products/pm50-yoke.png",
+  },
+  {
+    id: "gauss-meter",
+    category: "Conventional NDT",
+    name: "Gauss Meter",
+    description:
+      "Pocket-style gauss meter used to verify residual magnetic field strength on parts after magnetic particle testing and demagnetization.",
+    spec: "Field-parallel pointer scale, 10 gauss range",
+    icon: "magneticParticle",
+    image: "/products/gauss-meter.png",
+  },
+  {
+    id: "uv-lamp",
+    category: "Conventional NDT",
+    name: "UV-A Inspection Lamp",
+    description:
+      "Handheld UV-A black light torch for fluorescent penetrant and fluorescent magnetic particle inspection.",
+    spec: "Battery-powered, multi-LED array",
+    icon: "penetrant",
+    image: "/products/uv-lamp.png",
   },
   {
     id: "tr-probe",
@@ -297,6 +387,56 @@ export const bestsellerProducts: Product[] = [
     spec: "Compatible with all major NDT instruments",
     icon: "wedge",
     image: "/products/cleaning-bulb.png",
+  },
+  {
+    id: "mini-tr-probe",
+    category: "Probe Accessories",
+    name: "Miniature TR Probe",
+    description:
+      "Compact twin-crystal transmit-receive probe in a machined stainless housing, for near-surface flaw detection in restricted-access areas.",
+    spec: "Twin-crystal, 5x5mm element configuration",
+    icon: "wedge",
+    image: "/products/mini-tr-probe.png",
+  },
+  {
+    id: "single-element-probe",
+    category: "Probe Accessories",
+    name: "Single Element Probe",
+    description:
+      "Knurled single-crystal contact probe for general-purpose ultrasonic thickness and flaw testing.",
+    spec: "Compatible with all major NDT instruments",
+    icon: "probe",
+    image: "/products/single-element-probe.png",
+  },
+  {
+    id: "probe-membranes",
+    category: "Accessories",
+    name: "Probe Wedges & Membranes",
+    description:
+      "Set of couplant membranes and contact wedges in round and rectangular profiles, used with immersion and wheel-probe scanning setups.",
+    spec: "Custom sizes available on request",
+    icon: "transducer",
+    image: "/products/probe-membranes.png",
+  },
+  {
+    id: "pie-gauge",
+    category: "Inspection Equipment",
+    name: "Weld Pie Gauge",
+    description:
+      "Octagonal weld pie gauge for measuring fillet weld leg length, throat size, and undercut depth on-site.",
+    spec: "Made in USA",
+    icon: "welding",
+    image: "/products/pie-gauge.png",
+  },
+  {
+    id: "pwht-thermocouple",
+    category: "Post Weld Heat Treatment",
+    name: "K-Type Thermocouple Wire",
+    description:
+      "K-type thermocouple wire spool used to monitor and control temperature during post weld heat treatment cycles.",
+    spec: "K-type, supplied on spool",
+    icon: "welding",
+    image: "/products/pwht-thermocouple.png",
   },
 ];
 
