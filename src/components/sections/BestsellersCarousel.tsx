@@ -57,21 +57,25 @@ export default function BestsellersCarousel() {
                 />
               </div>
 
+              {/* Fixed-line clamps + reserved min-heights keep every card
+                  the same size regardless of how long each product's copy
+                  runs, instead of stretching short cards with dead space
+                  to match the tallest one. */}
               <div className="flex flex-1 flex-col p-7 pt-0">
                 <p className="text-eyebrow text-[0.62rem] text-vblue">
                   {p.category}
                 </p>
-                <h3 className="mt-1.5 font-heading text-lg font-bold text-navy">
+                <h3 className="mt-1.5 line-clamp-2 min-h-[3.5rem] font-heading text-lg font-bold text-navy">
                   {p.name}
                 </h3>
-                <p className="mt-2.5 text-base leading-relaxed text-body">
+                <p className="mt-2.5 line-clamp-3 min-h-[4.9rem] text-base leading-relaxed text-body">
                   {p.description}
                 </p>
-                <p className="mt-3 text-[0.78rem] leading-snug tracking-normal text-steel italic">
+                <p className="mt-3 line-clamp-2 min-h-[2.2rem] text-[0.78rem] leading-snug tracking-normal text-steel italic">
                   {p.spec}
                 </p>
 
-                <div className="flex items-center gap-2 pt-5 text-eyebrow text-[0.65rem] text-vblue">
+                <div className="mt-auto flex items-center gap-2 pt-5 text-eyebrow text-[0.65rem] text-vblue">
                   View Product
                   <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
                 </div>
