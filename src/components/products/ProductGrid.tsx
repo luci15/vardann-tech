@@ -6,41 +6,87 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Download, Eye, X } from "lucide-react";
 import type { Product } from "@/lib/content";
 
+// Order follows the brochure's own "Our Product" page sequence (tube
+// probes → transducers/cables/accessories → ultrasonic test blocks → MPI
+// kits → welded specimens → PWHT), not alphabetical — so the grouped page
+// reads the same way the source document does. Any category not listed
+// here (shouldn't happen, but content.ts isn't statically constrained to
+// this list) falls back to appearing after these, alphabetically.
+const CATEGORY_ORDER = [
+  "Tube Inspection",
+  "Probe Accessories",
+  "Accessories",
+  "Calibration Standards",
+  "Conventional NDT",
+  "Welded Specimens",
+  "Inspection Equipment",
+  "Post Weld Heat Treatment",
+];
+
+function groupByCategory(products: Product[]) {
+  const byCategory = new Map<string, Product[]>();
+  products.forEach((p) => {
+    const bucket = byCategory.get(p.category) ?? [];
+    bucket.push(p);
+    byCategory.set(p.category, bucket);
+  });
+
+  const known = CATEGORY_ORDER.filter((c) => byCategory.has(c));
+  const rest = [...byCategory.keys()].filter((c) => !CATEGORY_ORDER.includes(c)).sort();
+
+  return [...known, ...rest].map((category) => ({
+    category,
+    items: byCategory.get(category)!,
+  }));
+}
+
 // Cards show only a small gist (image, category, name) — the eye button
 // opens a modal with the full description/spec, per the client's request
-// to keep the grid itself scannable rather than dense with text.
+// to keep the grid itself scannable rather than dense with text. Products
+// are grouped under their category as a heading, matching how the
+// company's own brochure organizes them, rather than one flat grid.
 export default function ProductGrid({ products }: { products: Product[] }) {
   const [active, setActive] = useState<Product | null>(null);
+  const groups = groupByCategory(products);
 
   return (
     <>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {products.map((p) => (
-          <div
-            key={p.id}
-            onClick={() => setActive(p)}
-            className="group relative cursor-pointer overflow-hidden rounded-2xl border border-vblue/10 bg-white shadow-sm transition-colors hover:border-vblue/50"
-          >
-            <div className="relative aspect-square w-full">
-              <Image
-                src={p.image}
-                alt={p.name}
-                fill
-                sizes="(max-width: 768px) 90vw, 30vw"
-                className="object-contain p-6"
-              />
-              <button
-                type="button"
-                onClick={() => setActive(p)}
-                aria-label={`View details for ${p.name}`}
-                className="absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-vblue shadow-md backdrop-blur transition-all hover:bg-vblue hover:text-white"
-              >
-                <Eye className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="p-7 pt-0">
-              <p className="text-eyebrow text-[0.62rem] text-vblue">{p.category}</p>
-              <h3 className="mt-1.5 font-heading text-lg font-bold text-navy">{p.name}</h3>
+      <div className="space-y-14">
+        {groups.map((group) => (
+          <div key={group.category}>
+            <h2 className="mb-6 font-display text-2xl text-navy sm:text-3xl">
+              {group.category}
+            </h2>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {group.items.map((p) => (
+                <div
+                  key={p.id}
+                  onClick={() => setActive(p)}
+                  className="group relative cursor-pointer overflow-hidden rounded-2xl border border-vblue/10 bg-white shadow-sm transition-colors hover:border-vblue/50"
+                >
+                  <div className="relative aspect-square w-full">
+                    <Image
+                      src={p.image}
+                      alt={p.name}
+                      fill
+                      sizes="(max-width: 768px) 90vw, 30vw"
+                      className="object-contain p-6"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setActive(p)}
+                      aria-label={`View details for ${p.name}`}
+                      className="absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-vblue shadow-md backdrop-blur transition-all hover:bg-vblue hover:text-white"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="p-7 pt-0">
+                    <p className="text-eyebrow text-[0.62rem] text-vblue">{p.category}</p>
+                    <h3 className="mt-1.5 font-heading text-lg font-bold text-navy">{p.name}</h3>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}

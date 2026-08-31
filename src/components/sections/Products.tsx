@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import SectionHeading from "@/components/ui/SectionHeading";
 import BestsellersCarousel from "./BestsellersCarousel";
 
@@ -16,6 +18,15 @@ export default function Products() {
         />
         <div className="mt-14">
           <BestsellersCarousel />
+        </div>
+        <div className="mt-10 flex justify-center">
+          <Link
+            href="/products"
+            className="group inline-flex items-center gap-2 rounded-full border border-vblue bg-white px-6 py-3 text-eyebrow text-[0.7rem] text-vblue transition-colors hover:bg-lightblue"
+          >
+            View All Products
+            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
         </div>
       </div>
     </section>

@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { bestsellerProducts } from "@/lib/content";
 
@@ -42,13 +43,10 @@ export default function BestsellersCarousel() {
             className="relative shrink-0 basis-full sm:basis-[calc((100%-20px)/2)] lg:basis-[calc((100%-40px)/3)]"
             style={{ scrollSnapAlign: "start" }}
           >
-            {/* Soft highlight blob — sits behind the card since this
-                wrapper has no overflow clipping, unlike the card itself. */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-vblue/15 blur-2xl"
-            />
-            <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-vblue/10 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-vblue/50 hover:shadow-xl">
+            <Link
+              href="/products"
+              className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-vblue/10 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-vblue/50 hover:shadow-xl"
+            >
               <div className="relative aspect-square w-full shrink-0">
                 <Image
                   src={p.image}
@@ -73,12 +71,12 @@ export default function BestsellersCarousel() {
                   {p.spec}
                 </p>
 
-                <div className="mt-auto flex items-center gap-2 pt-5 text-eyebrow text-[0.65rem] text-vblue">
+                <div className="flex items-center gap-2 pt-5 text-eyebrow text-[0.65rem] text-vblue">
                   View Product
                   <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
                 </div>
               </div>
-            </div>
+            </Link>
           </div>
         ))}
       </div>
