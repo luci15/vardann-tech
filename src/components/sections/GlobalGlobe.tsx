@@ -33,6 +33,8 @@ export const ORIGIN_COUNTRY: CountryData = {
   isOrigin: true,
 };
 
+let cachedEarthTexture: THREE.Texture | null = null;
+
 // Matches the regions the company actually serves per its own profile
 // ("clients across India, the Middle East, Africa, and the Asia-Pacific
 // region") — the previous list (USA, Russia, Egypt, Libya) didn't.
@@ -66,59 +68,13 @@ function latLongToVector3(lat: number, lon: number, radius = 5, altitude = 0): T
   );
 }
 
-function createEarthTexture(): THREE.CanvasTexture {
+function createNeutralOceanTexture(): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
-  canvas.width = 2048;
-  canvas.height = 1024;
+  canvas.width = 64;
+  canvas.height = 32;
   const ctx = canvas.getContext("2d")!;
-
-  // Pale Silvery Slate Ocean Fill (Matching Reference Theme)
   ctx.fillStyle = "#eaedf2";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Continents Polygons (Vardann Brand Blue with Crisp White Outlines)
-  const continents: [number, number][][] = [
-    [[37, 10], [30, 32], [12, 43], [-12, 40], [-34, 20], [-34, 18], [5, 9], [15, -17], [32, -13], [37, 10]],
-    [[36, -9], [43, -9], [44, 8], [55, 8], [70, 25], [70, 170], [60, 160], [40, 145], [22, 120], [10, 105], [8, 77], [25, 65], [25, 55], [30, 35], [40, 28], [36, -9]],
-    [[35, 75], [30, 88], [22, 90], [15, 80], [8, 77], [15, 73], [24, 68], [32, 70], [35, 75]],
-    [[30, 33], [30, 48], [12, 44], [16, 53], [26, 56], [30, 48], [30, 33]],
-    [[70, 30], [75, 100], [70, 175], [50, 140], [50, 100], [55, 60], [70, 30]],
-    [[-12, 130], [-15, 145], [-38, 145], [-35, 115], [-20, 115], [-12, 130]],
-    [[70, -165], [70, -60], [45, -60], [25, -80], [15, -90], [15, -105], [30, -120], [60, -165], [70, -165]],
-    [[12, -75], [5, -50], [-10, -35], [-50, -70], [-45, -75], [0, -80], [12, -75]],
-  ];
-
-  ctx.fillStyle = "#0050a0";
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
-  ctx.lineWidth = 2;
-
-  continents.forEach((poly) => {
-    ctx.beginPath();
-    poly.forEach(([lat, lon], idx) => {
-      const x = ((lon + 180) / 360) * canvas.width;
-      const y = ((90 - lat) / 180) * canvas.height;
-      if (idx === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-  });
-
-  // Warm Amber Glow Spots under Target Countries
-  ALL_COUNTRIES.forEach((c) => {
-    const cx = ((c.lon + 180) / 360) * canvas.width;
-    const cy = ((90 - c.lat) / 180) * canvas.height;
-    const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 25);
-    grad.addColorStop(0, "rgba(245, 158, 11, 0.95)");
-    grad.addColorStop(0.5, "rgba(251, 191, 36, 0.4)");
-    grad.addColorStop(1, "rgba(251, 191, 36, 0)");
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 25, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
@@ -224,19 +180,22 @@ export default function GlobalGlobe() {
     // 2. Globe Mesh with 4K Real Country Vector Outlines Texture
     const radius = 5;
     const earthGeo = new THREE.SphereGeometry(radius, 64, 64);
-    const fallbackTex = createEarthTexture();
+    const fallbackTex = cachedEarthTexture || createNeutralOceanTexture();
     const earthMat = new THREE.MeshStandardMaterial({
       map: fallbackTex,
       roughness: 0.6,
       metalness: 0.05,
     });
 
-    const textureLoader = new THREE.TextureLoader();
-    textureLoader.load("/earth-vector-countries.png", (tex) => {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      earthMat.map = tex;
-      earthMat.needsUpdate = true;
-    });
+    if (!cachedEarthTexture) {
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.load("/earth-vector-countries.png", (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        cachedEarthTexture = tex;
+        earthMat.map = tex;
+        earthMat.needsUpdate = true;
+      });
+    }
 
     const earthMesh = new THREE.Mesh(earthGeo, earthMat);
     globeGroup.add(earthMesh);
