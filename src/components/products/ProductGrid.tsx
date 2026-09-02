@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { Download, Eye, X } from "lucide-react";
@@ -48,6 +48,15 @@ function groupByCategory(products: Product[]) {
 export default function ProductGrid({ products }: { products: Product[] }) {
   const [active, setActive] = useState<Product | null>(null);
   const groups = groupByCategory(products);
+
+  useEffect(() => {
+    if (!active) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActive(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [active]);
 
   return (
     <>

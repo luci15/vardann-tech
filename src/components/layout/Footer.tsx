@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { company, navLinks, capabilities } from "@/lib/content";
+import { company, navLinks, serviceMeta } from "@/lib/content";
 import Logo from "./Logo";
 
 export default function Footer() {
@@ -36,13 +36,13 @@ export default function Footer() {
           <div>
             <p className="text-eyebrow text-[0.68rem] text-white/50">Services</p>
             <ul className="mt-4 flex flex-col gap-2.5">
-              {capabilities.map((c) => (
-                <li key={c.id}>
+              {serviceMeta.map((s) => (
+                <li key={s.id}>
                   <Link
-                    href="/services"
+                    href={`/services/${s.slug}`}
                     className="text-sm text-white/60 transition-colors hover:text-gold"
                   >
-                    {c.title}
+                    {s.title}
                   </Link>
                 </li>
               ))}
