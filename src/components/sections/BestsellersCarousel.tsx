@@ -89,7 +89,7 @@ export default function BestsellersCarousel() {
         type="button"
         aria-label="Previous product"
         onClick={() => scrollToIndex(active - 1)}
-        className="absolute left-0 top-[calc(38%+1.5rem)] z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-vblue/30 bg-white text-navy shadow-md transition-all hover:border-vblue hover:text-vblue hover:shadow-lg"
+        className="absolute left-0 top-[calc(38%+1.5rem)] z-10 hidden sm:flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-vblue/30 bg-white text-navy shadow-md transition-all hover:border-vblue hover:text-vblue hover:shadow-lg"
       >
         <ChevronLeft className="h-5 w-5" />
       </button>
@@ -98,7 +98,7 @@ export default function BestsellersCarousel() {
         type="button"
         aria-label="Next product"
         onClick={() => scrollToIndex(active + 1)}
-        className="absolute right-0 top-[calc(38%+1.5rem)] z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-vblue/30 bg-white text-navy shadow-md transition-all hover:border-vblue hover:text-vblue hover:shadow-lg"
+        className="absolute right-0 top-[calc(38%+1.5rem)] z-10 hidden sm:flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-vblue/30 bg-white text-navy shadow-md transition-all hover:border-vblue hover:text-vblue hover:shadow-lg"
       >
         <ChevronRight className="h-5 w-5" />
       </button>

@@ -17,18 +17,8 @@ export default function Navbar() {
 
   // The trigger link and the mega menu panel are not the same DOM subtree
   // (the panel is a fixed-position sibling further down the page), so a
-  // plain onMouseLeave on the trigger closes the menu the instant the
-  // cursor moves toward it — before it ever reaches the panel. A short
-  // close delay, cancelled if the cursor lands on either the trigger or
-  // the panel, bridges that gap (the standard mega-menu hover pattern).
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const openServices = () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
     setServicesOpen(true);
-  };
-  const scheduleCloseServices = () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setServicesOpen(false), 350);
   };
 
   // Close the mega menu / mobile panel on route change — adjusted during
@@ -68,12 +58,18 @@ export default function Navbar() {
 
             if (isServices) {
               return (
-                <div key={link.href} onMouseEnter={openServices} onMouseLeave={scheduleCloseServices}>
+                <div key={link.href} onMouseEnter={openServices}>
                   <Link
                     href={link.href}
                     aria-haspopup="menu"
                     aria-expanded={servicesOpen}
                     onFocus={openServices}
+                    onClick={(e) => {
+                      // If clicked on desktop, toggle services menu without forcing navigation
+                      if (!servicesOpen) {
+                        setServicesOpen(true);
+                      }
+                    }}
                     className={`text-eyebrow relative flex items-center gap-1 rounded-full px-4 py-2 text-[0.68rem] transition-colors duration-300 ${
                       active || servicesOpen
                         ? "bg-lightblue text-vblue"
@@ -125,8 +121,6 @@ export default function Navbar() {
       <ImmersiveMegaMenu
         open={servicesOpen}
         onClose={() => setServicesOpen(false)}
-        onMouseEnter={openServices}
-        onMouseLeave={scheduleCloseServices}
       />
 
       {open && (

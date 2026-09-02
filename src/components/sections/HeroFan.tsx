@@ -67,23 +67,24 @@ export default function HeroFan({ products, className = "" }: HeroFanProps) {
       </div>
 
       {/* Mobile — clean 2-column grid, no overlap, minimal rotation. */}
-      <div className="grid grid-cols-2 gap-4 px-2 pt-4 sm:hidden">
+      <div className="grid grid-cols-2 gap-3.5 px-1 pt-4 sm:hidden">
         {cards.map((p, i) => (
           <motion.div
             key={p.id}
-            className="relative h-32 w-full"
+            className="relative h-36 w-full"
             initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0, rotate: i % 2 === 0 ? -3 : 3 }}
+            whileInView={{ opacity: 1, y: 0, rotate: i % 2 === 0 ? -2 : 2 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.08 + i * 0.06, duration: 0.6 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ delay: 0.08 + i * 0.06, duration: 0.5 }}
           >
-            <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/5 bg-white p-3 shadow-[0_16px_32px_-10px_rgba(0,0,0,0.55)]">
+            <div className="relative h-full w-full overflow-hidden rounded-2xl border border-vblue/10 bg-white p-3 shadow-[0_12px_24px_-8px_rgba(0,0,0,0.15)]">
               <div className="relative h-full w-full">
                 <Image
                   src={p.image}
                   alt={p.name}
                   fill
-                  sizes="160px"
+                  sizes="180px"
                   className="object-contain"
                   priority={i < 2}
                 />

@@ -386,21 +386,21 @@ function DesktopStepRow({
       >
         {/* Step Number + Title */}
         <div className={`flex items-baseline gap-1 sm:gap-2 lg:gap-3 ${isCircleLeft ? "" : "justify-end"}`}>
-          <span className="font-mono text-[0.7rem] sm:text-base md:text-xl lg:text-2xl font-black text-navy">
+          <span className="font-mono text-[0.8rem] sm:text-base md:text-xl lg:text-2xl font-black text-navy">
             {step.number}
           </span>
-          <h3 className="font-display text-[0.68rem] sm:text-base md:text-xl lg:text-2xl font-bold text-navy tracking-tight leading-tight">
+          <h3 className="font-display text-[0.82rem] sm:text-base md:text-xl lg:text-2xl font-bold text-navy tracking-tight leading-snug">
             {step.title}
           </h3>
         </div>
 
         {/* Subtitle */}
-        <p className="mt-0.5 sm:mt-1 text-[0.45rem] sm:text-[0.55rem] md:text-[0.62rem] lg:text-[0.68rem] font-bold uppercase tracking-wider sm:tracking-widest text-vblue">
+        <p className="mt-0.5 sm:mt-1 text-[0.52rem] sm:text-[0.58rem] md:text-[0.65rem] lg:text-[0.68rem] font-bold uppercase tracking-wider sm:tracking-widest text-vblue">
           {step.subtitle}
         </p>
 
         {/* Description Text */}
-        <p className="mt-0.5 sm:mt-2 lg:mt-3 text-[0.52rem] sm:text-xs md:text-sm leading-snug sm:leading-relaxed text-body">
+        <p className="mt-0.5 sm:mt-2 lg:mt-3 text-[0.62rem] sm:text-xs md:text-sm leading-tight sm:leading-relaxed text-body">
           {step.description}
         </p>
       </motion.div>

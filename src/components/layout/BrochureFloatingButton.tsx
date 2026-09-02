@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Download, X, CheckCircle2, ShieldCheck, ArrowRight, FileText, User, Mail, Phone, ChevronDown } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Download, X, CheckCircle2, ShieldCheck, ArrowRight, ArrowLeft, FileText, User, Mail, Phone, ChevronDown, Search, BellOff } from "lucide-react";
 
 // Alphabetically sorted list of world countries with clean dial codes
 const COUNTRY_CODES = [
@@ -102,13 +102,56 @@ const COUNTRY_CODES = [
 
 export default function BrochureFloatingButton() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAutoTriggered, setIsAutoTriggered] = useState(false);
+  const [isClosePromptOpen, setIsClosePromptOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [countryCode, setCountryCode] = useState("+91");
+  const [selectedCountry, setSelectedCountry] = useState({ name: "India", code: "+91" });
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
   const [phone, setPhone] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Filter countries for search input
+  const filteredCountries = COUNTRY_CODES.filter((c) =>
+    c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+    c.code.includes(countrySearch)
+  );
+
+  // 2-Minute Recurring Timer to automatically show popup if site is kept open
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isDismissed = localStorage.getItem("vardann_popup_disabled");
+    if (isDismissed === "true") return;
+
+    // 2 minutes = 120,000ms
+    const interval = setInterval(() => {
+      const currentDismissed = localStorage.getItem("vardann_popup_disabled");
+      if (currentDismissed !== "true" && !submitted) {
+        setIsAutoTriggered(true);
+        setIsOpen(true);
+      }
+    }, 2 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [submitted]);
+
+  // Close country dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsCountryDropdownOpen(false);
+      }
+    };
+    if (isCountryDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isCountryDropdownOpen]);
 
   // Validation criteria
   const isNameValid = name.trim().length > 0;
@@ -116,25 +159,64 @@ export default function BrochureFloatingButton() {
   const isPhoneValid = phone.trim().replace(/\D/g, "").length >= 6;
   const isFormValid = isNameValid && isEmailValid && isPhoneValid && agreed;
 
-  // Close on Escape key press
+  // Close modal or show confirmation on Escape key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        setIsOpen(false);
+      if (e.key === "Escape") {
+        if (isCountryDropdownOpen) {
+          setIsCountryDropdownOpen(false);
+        } else if (isOpen) {
+          if (isAutoTriggered && !submitted && !isClosePromptOpen) {
+            setIsClosePromptOpen(true);
+          } else {
+            setIsOpen(false);
+            setIsClosePromptOpen(false);
+          }
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, isCountryDropdownOpen, isClosePromptOpen, isAutoTriggered, submitted]);
 
+  // When user clicks floating brochure button directly (manual open)
   const handleOpen = () => {
+    setIsAutoTriggered(false);
     setIsOpen(true);
+    setIsClosePromptOpen(false);
     setSubmitted(false);
+    setIsCountryDropdownOpen(false);
     setError("");
   };
 
-  const handleClose = () => {
+  // When user clicks cross (X) or backdrop
+  const handleCrossClick = () => {
+    if (isAutoTriggered && !submitted) {
+      // Auto-triggered popup: ask if user wants to permanently disable
+      setIsClosePromptOpen(true);
+    } else {
+      // Manually opened via brochure button: close normally
+      setIsOpen(false);
+      setIsClosePromptOpen(false);
+      setIsCountryDropdownOpen(false);
+    }
+  };
+
+  // Permanently disable automatic popup if user clicks "Don't show this again"
+  const handleDontAskAgain = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("vardann_popup_disabled", "true");
+    }
     setIsOpen(false);
+    setIsClosePromptOpen(false);
+    setIsCountryDropdownOpen(false);
+  };
+
+  // Just close for now (timer will re-trigger after interval)
+  const handleCloseForNow = () => {
+    setIsOpen(false);
+    setIsClosePromptOpen(false);
+    setIsCountryDropdownOpen(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -144,8 +226,13 @@ export default function BrochureFloatingButton() {
       return;
     }
 
+    if (typeof window !== "undefined") {
+      localStorage.setItem("vardann_popup_disabled", "true");
+    }
+
     setError("");
     setSubmitted(true);
+    setIsClosePromptOpen(false);
 
     // Trigger PDF brochure download
     const link = document.createElement("a");
@@ -160,7 +247,7 @@ export default function BrochureFloatingButton() {
   return (
     <>
       {/* Site-wide Floating Brochure Button (Bottom Right) */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
         <button
           onClick={handleOpen}
           type="button"
@@ -189,14 +276,14 @@ export default function BrochureFloatingButton() {
       {isOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200"
-          onClick={handleClose}
+          onClick={handleCrossClick}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl bg-white shadow-2xl border border-slate-100 transition-all animate-in zoom-in-95 duration-200"
           >
             {/* Header Banner */}
-            <div className="sticky top-0 z-10 bg-gradient-to-r from-navy via-vblue to-navy px-6 py-5 text-white">
+            <div className="sticky top-0 z-20 bg-gradient-to-r from-navy via-vblue to-navy px-6 py-5 text-white">
               {/* Decorative background accent */}
               <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gold/10 blur-xl" />
 
@@ -216,7 +303,7 @@ export default function BrochureFloatingButton() {
                 </div>
 
                 <button
-                  onClick={handleClose}
+                  onClick={handleCrossClick}
                   type="button"
                   aria-label="Close modal"
                   className="rounded-full p-1.5 text-white/70 hover:bg-white/10 hover:text-white transition-colors focus:outline-none"
@@ -226,9 +313,52 @@ export default function BrochureFloatingButton() {
               </div>
             </div>
 
-            {/* Modal Body */}
+            {/* Modal Content */}
             <div className="p-6">
-              {!submitted ? (
+              {isClosePromptOpen ? (
+                /* Cross Confirmation View with "Don't Show Again" and "Back" */
+                <div className="py-6 px-2 text-center space-y-5 animate-in zoom-in-95 duration-150">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 shadow-sm">
+                    <BellOff className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg sm:text-xl font-bold text-slate-900">Before you leave...</h4>
+                    <p className="text-xs text-slate-600 max-w-xs mx-auto mt-1.5 leading-relaxed">
+                      Would you like to permanently disable this popup, or go back to continue getting your brochure?
+                    </p>
+                  </div>
+
+                  <div className="pt-2 flex flex-col sm:flex-row gap-3 max-w-sm mx-auto">
+                    <button
+                      type="button"
+                      onClick={handleDontAskAgain}
+                      className="flex-1 rounded-xl bg-navy py-3 px-4 text-xs font-semibold text-white hover:bg-vblue transition-colors shadow-md active:scale-95"
+                    >
+                      Don&apos;t Show Again
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsClosePromptOpen(false)}
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white py-3 px-4 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm active:scale-95"
+                    >
+                      <ArrowLeft className="h-3.5 w-3.5" />
+                      <span>Back</span>
+                    </button>
+                  </div>
+
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={handleCloseForNow}
+                      className="text-[0.72rem] text-slate-400 hover:text-slate-600 transition-colors underline decoration-slate-300"
+                    >
+                      Close for now (remind me later)
+                    </button>
+                  </div>
+                </div>
+              ) : !submitted ? (
+                /* Regular Form View */
                 <form onSubmit={handleSubmit} className="space-y-3.5">
                   <p className="text-xs font-medium text-slate-500">
                     Please fill in your details below to download our official brochure.
@@ -282,28 +412,79 @@ export default function BrochureFloatingButton() {
                     </div>
                   </div>
 
-                  {/* Country Selector (Full-width Dropdown with Chevron Down Icon) */}
-                  <div>
-                    <label htmlFor="country-code" className="block text-xs font-semibold text-slate-700 mb-1">
+                  {/* Custom Country Selector (Opens strictly downwards below button) */}
+                  <div className="relative" ref={dropdownRef}>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
                       Country <span className="text-red-500">*</span>
                     </label>
-                    <div className="relative">
-                      <select
-                        id="country-code"
-                        value={countryCode}
-                        onChange={(e) => setCountryCode(e.target.value)}
-                        className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-3.5 pr-10 text-xs font-medium text-slate-800 focus:border-vblue focus:bg-white focus:outline-none focus:ring-2 focus:ring-vblue/20 transition-all cursor-pointer"
-                      >
-                        {COUNTRY_CODES.map((item) => (
-                          <option key={item.name + item.code} value={item.code}>
-                            {item.name} ({item.code})
-                          </option>
-                        ))}
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500">
-                        <ChevronDown className="h-4 w-4" />
+                    <button
+                      type="button"
+                      onClick={() => setIsCountryDropdownOpen((prev) => !prev)}
+                      className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 px-3.5 text-left text-xs font-medium text-slate-800 transition-all hover:bg-slate-100/70 focus:border-vblue focus:bg-white focus:outline-none focus:ring-2 focus:ring-vblue/20"
+                    >
+                      <span className="truncate">
+                        {selectedCountry.name} ({selectedCountry.code})
+                      </span>
+                      <ChevronDown
+                        className={`h-4 w-4 text-slate-500 transition-transform duration-200 ${
+                          isCountryDropdownOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+
+                    {/* Downward opening dropdown menu */}
+                    {isCountryDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1.5 z-50 flex max-h-56 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+                        {/* Search Bar */}
+                        <div className="sticky top-0 z-10 border-b border-slate-100 bg-slate-50/90 p-2 backdrop-blur-sm">
+                          <div className="relative">
+                            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                            <input
+                              type="text"
+                              value={countrySearch}
+                              onChange={(e) => setCountrySearch(e.target.value)}
+                              placeholder="Search country..."
+                              className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-8 pr-3 text-xs text-slate-800 placeholder:text-slate-400 focus:border-vblue focus:outline-none"
+                              autoFocus
+                            />
+                          </div>
+                        </div>
+
+                        {/* Country List (Alphabetically Ordered) */}
+                        <div className="flex-1 overflow-y-auto p-1">
+                          {filteredCountries.map((c) => (
+                            <button
+                              key={c.name}
+                              type="button"
+                              onClick={() => {
+                                setSelectedCountry(c);
+                                setIsCountryDropdownOpen(false);
+                                setCountrySearch("");
+                              }}
+                              className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs transition-colors ${
+                                selectedCountry.name === c.name
+                                  ? "bg-vblue font-semibold text-white"
+                                  : "text-slate-700 hover:bg-slate-100"
+                              }`}
+                            >
+                              <span>{c.name}</span>
+                              <span
+                                className={`text-[0.72rem] ${
+                                  selectedCountry.name === c.name ? "text-white/80" : "text-slate-400"
+                                }`}
+                              >
+                                {c.code}
+                              </span>
+                            </button>
+                          ))}
+                          {filteredCountries.length === 0 && (
+                            <div className="py-4 text-center text-xs text-slate-400">
+                              No country found
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* Phone Number with Selected Country Code Prefix */}
@@ -313,7 +494,7 @@ export default function BrochureFloatingButton() {
                     </label>
                     <div className="flex">
                       <span className="inline-flex items-center px-3.5 rounded-l-xl border border-r-0 border-slate-200 bg-slate-100 text-xs font-semibold text-slate-700 select-none">
-                        {countryCode}
+                        {selectedCountry.code}
                       </span>
                       <div className="relative flex-1">
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
@@ -339,7 +520,7 @@ export default function BrochureFloatingButton() {
                       <span>Privacy Policy &amp; Data Commitment</span>
                     </div>
                     <p className="text-[0.7rem] leading-relaxed text-slate-600">
-                      We value your privacy. The information provided ({name || "Name"}, {email || "Email"}, {countryCode} {phone || "Phone"}) will strictly be used by Vardann Tech and Engg LLP to send you our brochure and official technical communication. We maintain strict data confidentiality and do not share your details with third parties.
+                      We value your privacy. The information provided ({name || "Name"}, {email || "Email"}, {selectedCountry.code} {phone || "Phone"}) will strictly be used by Vardann Tech and Engg LLP to send you our brochure and official technical communication. We maintain strict data confidentiality and do not share your details with third parties.
                     </p>
                   </div>
 
@@ -384,7 +565,7 @@ export default function BrochureFloatingButton() {
                   <div>
                     <h4 className="text-xl font-bold text-slate-900">Thank You, {name}!</h4>
                     <p className="text-xs text-slate-600 max-w-xs mx-auto mt-1.5 leading-relaxed">
-                      Your download for the official <span className="font-semibold text-slate-800">Vardann Tech Brochure</span> has started automatically for <span className="font-medium text-vblue">{countryCode} {phone}</span>.
+                      Your download for the official <span className="font-semibold text-slate-800">Vardann Tech Brochure</span> has started automatically for <span className="font-medium text-vblue">{selectedCountry.code} {phone}</span>.
                     </p>
                   </div>
 
@@ -402,7 +583,7 @@ export default function BrochureFloatingButton() {
 
                     <button
                       type="button"
-                      onClick={handleClose}
+                      onClick={handleCloseForNow}
                       className="text-xs text-slate-500 hover:text-slate-800 py-1 font-medium transition-colors"
                     >
                       Close Window

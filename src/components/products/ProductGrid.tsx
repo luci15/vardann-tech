@@ -115,7 +115,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
               role="dialog"
               aria-modal="true"
               aria-label={active.name}
-              className="relative grid w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl sm:grid-cols-2"
+              className="relative grid w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-3xl bg-white shadow-2xl sm:grid-cols-2 [scrollbar-width:thin]"
               initial={{ opacity: 0, y: 16, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16, scale: 0.97 }}
@@ -126,32 +126,32 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                 type="button"
                 onClick={() => setActive(null)}
                 aria-label="Close"
-                className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-navy shadow-md hover:bg-lightblue"
+                className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-navy shadow-md transition-colors hover:bg-lightblue focus:outline-none"
               >
                 <X className="h-4 w-4" />
               </button>
 
-              <div className="relative aspect-square w-full bg-offwhite sm:aspect-auto">
+              <div className="relative aspect-square w-full bg-offwhite sm:aspect-auto min-h-[220px]">
                 <Image
                   src={active.image}
                   alt={active.name}
                   fill
                   sizes="(max-width: 640px) 100vw, 50vw"
-                  className="object-contain p-8"
+                  className="object-contain p-6 sm:p-8"
                 />
               </div>
 
-              <div className="flex flex-col justify-center p-7 sm:p-8">
+              <div className="flex flex-col justify-center p-6 sm:p-8">
                 <p className="text-eyebrow text-[0.62rem] text-vblue">{active.category}</p>
-                <h3 className="mt-2 font-display text-2xl text-navy">{active.name}</h3>
-                <p className="mt-3 text-base leading-relaxed text-body">{active.description}</p>
-                <p className="mt-4 text-[0.8rem] leading-snug tracking-normal text-steel italic">
+                <h3 className="mt-2 font-display text-xl sm:text-2xl text-navy">{active.name}</h3>
+                <p className="mt-2.5 text-sm sm:text-base leading-relaxed text-body">{active.description}</p>
+                <p className="mt-3 text-[0.78rem] leading-snug tracking-normal text-steel italic">
                   {active.spec}
                 </p>
                 <a
                   href="/vardann-tech-brochure.pdf"
                   download
-                  className="mt-6 inline-flex w-fit items-center gap-2 rounded-full border border-vblue bg-white px-5 py-2.5 text-eyebrow text-[0.65rem] text-vblue transition-colors hover:bg-lightblue"
+                  className="mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-vblue bg-white px-5 py-2.5 text-eyebrow text-[0.65rem] text-vblue transition-colors hover:bg-lightblue"
                 >
                   <Download className="h-4 w-4" />
                   Download Brochure
