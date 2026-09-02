@@ -119,8 +119,8 @@ export default function SerpentineTimeline() {
           </h2>
         </div>
 
-        {/* Desktop View: Exact Concentric Serpentine SVG Path & 230px Circles */}
-        <div className="relative hidden lg:block aspect-[1000/1500] w-full">
+        {/* Unified Responsive Serpentine Roadmap & Moving Truck for Mobile & Desktop */}
+        <div className="relative aspect-[1000/1500] w-full">
           {/* Continuous Serpentine Road & Moving Truck SVG */}
           <svg
             className="pointer-events-none absolute top-0 left-0 h-full w-full overflow-visible"
@@ -304,32 +304,6 @@ export default function SerpentineTimeline() {
             threshold={0.86}
           />
         </div>
-
-        {/* Mobile View Layout (Large Solid Red Circles & Clean Text, No Boxes) */}
-        <div className="relative space-y-16 lg:hidden">
-          {timelineSteps.map((step) => (
-            <div key={step.number} className="flex flex-col items-center text-center">
-              {/* Solid Red Circle */}
-              <div className="flex h-36 w-36 sm:h-44 sm:w-44 items-center justify-center rounded-full bg-vblue shadow-[0_18px_40px_rgba(0,80,160,0.35)] text-white">
-                <span className="font-mono text-2xl sm:text-3xl font-black">{step.year}</span>
-              </div>
-              
-              {/* Pure Typography */}
-              <div className="mt-6">
-                <div className="flex items-center justify-center gap-2">
-                  <span className="font-mono text-2xl font-black text-navy">{step.number}</span>
-                  <h3 className="font-display text-xl font-bold text-navy">{step.title}</h3>
-                </div>
-                <p className="mt-2 text-xs font-bold uppercase tracking-widest text-vblue">
-                  {step.year} — {step.subtitle}
-                </p>
-                <p className="mt-3 max-w-md text-sm leading-relaxed text-body">
-                  {step.description}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );
@@ -382,9 +356,9 @@ function DesktopStepRow({
       className="absolute w-full"
       style={{ top: pctY(circleY - r), height: pctY(1500) }}
     >
-      {/* 1. Large 230px Solid Red Circle (Matching Reference Image) */}
+      {/* 1. Milestone Year Circle (Proportionately scaled) */}
       <motion.div
-        className="absolute rounded-full bg-vblue shadow-[0_18px_40px_rgba(0,87,164,0.35)] flex items-center justify-center text-white"
+        className="absolute rounded-full bg-vblue shadow-[0_8px_20px_rgba(0,87,164,0.25)] sm:shadow-[0_18px_40px_rgba(0,87,164,0.35)] flex items-center justify-center text-white"
         style={{
           left: pctX(circleX - r),
           width: pctX(circleSize),
@@ -393,40 +367,40 @@ function DesktopStepRow({
           opacity: opacity,
         }}
       >
-        <span className="font-mono text-4xl font-black text-white/95 tracking-tight">
+        <span className="font-mono text-xs sm:text-xl md:text-3xl lg:text-4xl font-black text-white/95 tracking-tight">
           {step.year}
         </span>
       </motion.div>
 
-      {/* 2. Pure Typography Text (NO BOXES / NO CARDS - Matching Reference Image) */}
+      {/* 2. Pure Typography Text (Responsive alignment & text sizes) */}
       <motion.div
-        className="absolute max-w-[420px]"
+        className="absolute w-[44%] sm:w-[42%] max-w-[420px]"
         style={{
-          top: pctY(50),
-          left: isCircleLeft ? pctX(540) : "auto",
-          right: isCircleLeft ? "auto" : pctX(540),
+          top: pctY(25),
+          left: isCircleLeft ? pctX(535) : "auto",
+          right: isCircleLeft ? "auto" : pctX(535),
           textAlign: isCircleLeft ? "left" : "right",
           opacity: opacity,
           x: textX,
         }}
       >
         {/* Step Number + Title */}
-        <div className={`flex items-baseline gap-3 ${isCircleLeft ? "" : "justify-end"}`}>
-          <span className="font-mono text-2xl font-black text-navy">
+        <div className={`flex items-baseline gap-1 sm:gap-2 lg:gap-3 ${isCircleLeft ? "" : "justify-end"}`}>
+          <span className="font-mono text-[0.7rem] sm:text-base md:text-xl lg:text-2xl font-black text-navy">
             {step.number}
           </span>
-          <h3 className="font-display text-2xl font-bold text-navy tracking-tight">
+          <h3 className="font-display text-[0.68rem] sm:text-base md:text-xl lg:text-2xl font-bold text-navy tracking-tight leading-tight">
             {step.title}
           </h3>
         </div>
 
         {/* Subtitle */}
-        <p className="mt-1 text-[0.68rem] font-bold uppercase tracking-widest text-vblue">
+        <p className="mt-0.5 sm:mt-1 text-[0.45rem] sm:text-[0.55rem] md:text-[0.62rem] lg:text-[0.68rem] font-bold uppercase tracking-wider sm:tracking-widest text-vblue">
           {step.subtitle}
         </p>
 
         {/* Description Text */}
-        <p className="mt-3 text-sm leading-relaxed text-body">
+        <p className="mt-0.5 sm:mt-2 lg:mt-3 text-[0.52rem] sm:text-xs md:text-sm leading-snug sm:leading-relaxed text-body">
           {step.description}
         </p>
       </motion.div>
