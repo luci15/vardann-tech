@@ -138,6 +138,18 @@ export default function SerpentineTimeline() {
               <filter id="road-elevation" x="-20%" y="-20%" width="140%" height="140%">
                 <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#0f172a" floodOpacity="0.2" />
               </filter>
+              {/* Synchronized Scroll Reveal Mask for Road & Dashes */}
+              <mask id="road-reveal-mask">
+                <motion.path
+                  d={PATH_DATA}
+                  stroke="#ffffff"
+                  strokeWidth="36"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                  style={{ pathLength: smoothProgress }}
+                />
+              </mask>
             </defs>
 
             {/* Invisible Reference Path for point/tangent measurements */}
@@ -153,43 +165,43 @@ export default function SerpentineTimeline() {
               d={PATH_DATA}
               stroke="rgba(0, 80, 160, 0.07)"
               strokeWidth="2"
-              strokeDasharray="4 6"
+              strokeDasharray="6 8"
               fill="none"
             />
 
-            {/* 2. Road Curb / Shadow Outer Border (Synchronized with scroll) */}
-            <motion.path
-              d={PATH_DATA}
-              stroke="#0f172a"
-              strokeWidth="18"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-              filter="url(#road-elevation)"
-              style={{ pathLength: smoothProgress }}
-            />
+            {/* 2. Paved Road & Broken Yellow Dashes (--- --- ---) revealed by mask */}
+            <g mask="url(#road-reveal-mask)">
+              {/* Road Curb / Shadow Outer Border */}
+              <path
+                d={PATH_DATA}
+                stroke="#0f172a"
+                strokeWidth="18"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                filter="url(#road-elevation)"
+              />
 
-            {/* 3. Asphalt Road Surface (Synchronized with scroll) */}
-            <motion.path
-              d={PATH_DATA}
-              stroke="#334155"
-              strokeWidth="14"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-              style={{ pathLength: smoothProgress }}
-            />
+              {/* Asphalt Road Surface */}
+              <path
+                d={PATH_DATA}
+                stroke="#334155"
+                strokeWidth="14"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
 
-            {/* 4. Active Driven Road Dashed Centerline (Synchronized with scroll) */}
-            <motion.path
-              d={PATH_DATA}
-              stroke="#f8c028"
-              strokeWidth="2.2"
-              strokeDasharray="6 6"
-              strokeLinecap="round"
-              fill="none"
-              style={{ pathLength: smoothProgress }}
-            />
+              {/* Broken Yellow Dashes Centerline */}
+              <path
+                d={PATH_DATA}
+                stroke="#f8c028"
+                strokeWidth="2.5"
+                strokeDasharray="14 14"
+                strokeLinecap="round"
+                fill="none"
+              />
+            </g>
 
             {/* 5. Miniature Animated Inspection Truck (Driving at leading edge of road) */}
             <g
