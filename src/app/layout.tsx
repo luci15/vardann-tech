@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Instrument_Sans, Instrument_Serif, Russo_One, Lato, Poppins } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import BrochureFloatingButton from "@/components/layout/BrochureFloatingButton";
 import "./globals.css";
 
 const instrumentSans = Instrument_Sans({
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
+        <BrochureFloatingButton />
       </body>
     </html>
   );
