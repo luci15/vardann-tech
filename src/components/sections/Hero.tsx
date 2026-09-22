@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Download } from "lucide-react";
 import { company, bestsellerProducts } from "@/lib/content";
 import HeroFan from "./HeroFan";
 
@@ -37,17 +37,25 @@ export default function Hero() {
           Asia-Pacific since {company.established}.
         </p>
 
-        <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href="/products"
-            className="group inline-flex items-center gap-2 rounded-full bg-vblue px-7 py-3 text-eyebrow text-[0.72rem] text-white transition-all duration-300 hover:scale-[1.03] hover:bg-vblue-hover"
+            className="group inline-flex items-center gap-2 rounded-full bg-vblue px-6 py-2.5 text-eyebrow text-[0.72rem] text-white transition-all duration-300 hover:scale-[1.03] hover:bg-vblue-hover"
           >
             Explore Products
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("open-brochure-modal"))}
+            className="text-eyebrow inline-flex items-center gap-2 rounded-full border border-vblue/30 bg-white px-6 py-2.5 text-[0.72rem] text-vblue transition-all duration-300 hover:scale-[1.03] hover:bg-lightblue"
+          >
+            <Download className="h-3.5 w-3.5" />
+            <span>Download Catalogue</span>
+          </button>
           <Link
             href="/contact"
-            className="text-eyebrow rounded-full border border-vblue bg-white px-7 py-3 text-[0.72rem] text-vblue transition-all duration-300 hover:scale-[1.03] hover:bg-lightblue"
+            className="text-eyebrow rounded-full border border-slate-200 bg-white/80 px-6 py-2.5 text-[0.72rem] text-body transition-all duration-300 hover:scale-[1.03] hover:bg-slate-100 hover:text-navy"
           >
             Talk to an Engineer
           </Link>

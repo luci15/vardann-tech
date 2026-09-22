@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, Download, Menu, X } from "lucide-react";
 import { navLinks, serviceMeta } from "@/lib/content";
 import Logo from "./Logo";
 import ImmersiveMegaMenu from "./ImmersiveMegaMenu";
@@ -126,12 +126,23 @@ export default function Navbar() {
           })}
         </nav>
 
-        <Link
-          href="/contact"
-          className="hidden rounded-full bg-gold px-5 py-2 text-eyebrow text-[0.66rem] text-navy transition-all duration-300 hover:scale-[1.04] hover:bg-vblue hover:text-white md:inline-flex"
-        >
-          Get in Touch
-        </Link>
+        <div className="hidden items-center gap-2 md:flex">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("open-brochure-modal"))}
+            className="flex items-center gap-1.5 rounded-full border border-vblue/20 bg-lightblue/60 px-4 py-2 text-eyebrow text-[0.66rem] text-vblue transition-all duration-300 hover:scale-[1.04] hover:bg-vblue hover:text-white"
+          >
+            <Download className="h-3 w-3" />
+            <span>Catalogue</span>
+          </button>
+
+          <Link
+            href="/contact"
+            className="rounded-full bg-gold px-5 py-2 text-eyebrow text-[0.66rem] text-navy transition-all duration-300 hover:scale-[1.04] hover:bg-vblue hover:text-white"
+          >
+            Get in Touch
+          </Link>
+        </div>
 
         <button
           type="button"
@@ -214,6 +225,17 @@ export default function Navbar() {
               </Link>
             );
           })}
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              window.dispatchEvent(new CustomEvent("open-brochure-modal"));
+            }}
+            className="flex items-center justify-center gap-2 rounded-full border border-vblue/20 bg-lightblue py-2.5 text-eyebrow text-[0.68rem] text-vblue"
+          >
+            <Download className="h-3.5 w-3.5" />
+            <span>Download Catalogue</span>
+          </button>
           <Link
             href="/contact"
             onClick={() => setOpen(false)}

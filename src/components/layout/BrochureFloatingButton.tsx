@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Download, X, CheckCircle2, ShieldCheck, ArrowRight, ArrowLeft, FileText, User, Mail, Phone, ChevronDown, Search, BellOff } from "lucide-react";
+import { Download, X, CheckCircle2, ShieldCheck, ArrowRight, ArrowLeft, FileText, User, Mail, Phone, ChevronDown, Search, BellOff, Building2, Loader2 } from "lucide-react";
 
 // Alphabetically sorted list of world countries with clean dial codes
 const COUNTRY_CODES = [
@@ -106,15 +106,24 @@ export default function BrochureFloatingButton() {
   const [isClosePromptOpen, setIsClosePromptOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
   const [selectedCountry, setSelectedCountry] = useState({ name: "India", code: "+91" });
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [countrySearch, setCountrySearch] = useState("");
   const [phone, setPhone] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Listen for global open requests from other buttons on the site
+  useEffect(() => {
+    const handleGlobalOpen = () => handleOpen();
+    window.addEventListener("open-brochure-modal", handleGlobalOpen);
+    return () => window.removeEventListener("open-brochure-modal", handleGlobalOpen);
+  }, []);
 
   // Filter countries for search input
   const filteredCountries = COUNTRY_CODES.filter((c) =>
@@ -219,10 +228,12 @@ export default function BrochureFloatingButton() {
     setIsCountryDropdownOpen(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) {
-      setError("Please fill out all required fields and accept the Privacy Policy.");
+    if (!isFormValid || isSubmitting) {
+      if (!isFormValid) {
+        setError("Please fill out all required fields and accept the Privacy Policy.");
+      }
       return;
     }
 
@@ -231,17 +242,38 @@ export default function BrochureFloatingButton() {
     }
 
     setError("");
-    setSubmitted(true);
-    setIsClosePromptOpen(false);
+    setIsSubmitting(true);
 
-    // Trigger PDF brochure download
-    const link = document.createElement("a");
-    link.href = "/vardann-tech-brochure.pdf";
-    link.download = "vardann-tech-brochure.pdf";
-    link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      // Send lead to Next.js API route, which forwards live to Google Sheet
+      await fetch("/api/catalogue-lead", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          phone: `${selectedCountry.code} ${phone.trim()}`,
+          company: company.trim(),
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to submit catalogue lead:", err);
+    } finally {
+      setIsSubmitting(false);
+      setSubmitted(true);
+      setIsClosePromptOpen(false);
+
+      // Trigger PDF brochure download
+      const link = document.createElement("a");
+      link.href = "/vardann-tech-brochure.pdf";
+      link.download = "vardann-tech-brochure.pdf";
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   return (
@@ -513,6 +545,26 @@ export default function BrochureFloatingButton() {
                     </div>
                   </div>
 
+                  {/* Company Name (Optional) */}
+                  <div>
+                    <label htmlFor="brochure-company" className="block text-xs font-semibold text-slate-700 mb-1">
+                      Company Name <span className="text-slate-400 font-normal">(Optional)</span>
+                    </label>
+                    <div className="relative">
+                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <Building2 className="h-4 w-4" />
+                      </div>
+                      <input
+                        id="brochure-company"
+                        type="text"
+                        value={company}
+                        onChange={(e) => setCompany(e.target.value)}
+                        placeholder="e.g. Acme Engineering Services"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-9 pr-3 text-sm text-slate-800 placeholder-slate-400 focus:border-vblue focus:bg-white focus:outline-none focus:ring-2 focus:ring-vblue/20 transition-all"
+                      />
+                    </div>
+                  </div>
+
                   {/* Privacy Policy Box */}
                   <div className="rounded-2xl border border-slate-200/80 bg-slate-50 p-3 space-y-1">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
@@ -520,7 +572,7 @@ export default function BrochureFloatingButton() {
                       <span>Privacy Policy &amp; Data Commitment</span>
                     </div>
                     <p className="text-[0.7rem] leading-relaxed text-slate-600">
-                      We value your privacy. The information provided ({name || "Name"}, {email || "Email"}, {selectedCountry.code} {phone || "Phone"}) will strictly be used by Vardann Tech and Engg LLP to send you our brochure and official technical communication. We maintain strict data confidentiality and do not share your details with third parties.
+                      We value your privacy. The information provided ({name || "Name"}, {email || "Email"}, {selectedCountry.code} {phone || "Phone"}{company ? `, ${company}` : ""}) will strictly be used by Vardann Tech and Engg LLP to send you our brochure and official technical communication. We maintain strict data confidentiality and do not share your details with third parties.
                     </p>
                   </div>
 
@@ -542,14 +594,23 @@ export default function BrochureFloatingButton() {
                   <div>
                     <button
                       type="submit"
-                      disabled={!isFormValid}
+                      disabled={!isFormValid || isSubmitting}
                       className="w-full mt-1 flex items-center justify-center gap-2 rounded-xl bg-vblue py-3 px-4 font-semibold text-sm text-white shadow-md transition-all hover:bg-vblue-hover hover:shadow-lg disabled:opacity-40 disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
                     >
-                      <span>Next &amp; Download Brochure</span>
-                      <ArrowRight className="h-4 w-4" />
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Preparing Download...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Next &amp; Download Brochure</span>
+                          <ArrowRight className="h-4 w-4" />
+                        </>
+                      )}
                     </button>
 
-                    {!isFormValid && (
+                    {!isFormValid && !isSubmitting && (
                       <p className="text-[0.68rem] text-slate-400 text-center font-medium mt-1.5">
                         * Fill in Name, Email, Phone number, and check Privacy Policy to enable button.
                       </p>

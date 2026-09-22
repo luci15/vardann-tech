@@ -148,14 +148,17 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                 <p className="mt-3 text-[0.78rem] leading-snug tracking-normal text-steel italic">
                   {active.spec}
                 </p>
-                <a
-                  href="/vardann-tech-brochure.pdf"
-                  download
-                  className="mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-vblue bg-white px-5 py-2.5 text-eyebrow text-[0.65rem] text-vblue transition-colors hover:bg-lightblue"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActive(null);
+                    window.dispatchEvent(new CustomEvent("open-brochure-modal"));
+                  }}
+                  className="mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-vblue bg-white px-5 py-2.5 text-eyebrow text-[0.65rem] text-vblue transition-colors hover:bg-lightblue cursor-pointer"
                 >
                   <Download className="h-4 w-4" />
                   Download Brochure
-                </a>
+                </button>
               </div>
             </motion.div>
           </motion.div>
